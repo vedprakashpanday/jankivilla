@@ -1,0 +1,111 @@
+.remaining{
+    border: 0px;
+    background-color: #fff !important;
+    font-size: 25px;
+    color: #000000;
+    font-weight: 900;
+}
+.asterisk{
+    color:red;
+}
+.select2-container--default .select2-selection--single {
+    background-color: #fff;
+    border: 1px solid #c6c6c6 !important;
+    border-radius: 3px !important;
+}
+.select2-container .select2-selection--single {
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: 46px !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #000;
+    line-height: 20px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #797979 !important;
+}
+.select2-results__option{
+    font-size: 12px !important;
+}
+.studentSection{
+    background: #999d02 !important;
+}
+.studentSectionSidebar{
+    background: #79ffda !important;
+}
+.marqueeTag {
+    padding: 10px;
+    background: #ffffff;
+    font-size: 14px;
+    color: #050505;
+    font-weight: 600;
+}
+
+.card-header {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: rgb(70 197 206 / 49%);
+    border-bottom: 1px solid #e3e3e3;
+}
+.auth .auth-form-light {
+    background: #e1cdff;
+    border: 2px solid #848484;
+}
+
+.franchise_dashboard_color {
+    font-weight: bold;
+}
+  
+/* .franchise:hover {
+background-color: #e91010;
+} */
+.franchiseSidebar:hover{
+  background: #e90707;
+  color:#000000;
+  font-weight: bold !important;  
+  padding: 6px;
+  border-radius: 15px;
+}  
+.franchise_text{
+  color:#000000;
+}
+.franchise_nav_menu{
+  background: #242b47 !important;     
+}
+.element:hover {
+  background-color: #000F!important;
+}
+.franchiseSidebar2{
+  background: #e90707;
+  font-weight: bold !important;
+  padding: 6px;
+  border-radius: 15px;
+}
+.franchise{
+  background: #e90707 !important;
+}
+.franchasdise{
+  background: #06298f!important;
+}
+.auth form .form-group {
+    margin-bottom: 1.5rem;
+    border: 1px solid #606060;
+}
+.navbar .navbar-brand-wrapper .navbar-brand img {
+    margin: auto;
+    vertical-align: middle;
+    padding: 5px;
+    margin-top: 0px !important;
+    width: 82px;
+}
+.btnPagination{
+    padding: 10px 10px;
+}
+
+form#form1 {
+    margin: 0 !important; /* Forcefully remove margin */
+}
