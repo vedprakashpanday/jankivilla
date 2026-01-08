@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btnsubmit']) && $_POST
     $stmt = $pdo->prepare("INSERT INTO apply_cashback (customer_id, customer_name, cashback_name, cashback_percent, cashback_amount, remarks,created_at,updated_at) VALUES (?, ?, ?, ?, ?, ?,now(),now())");
     $stmt->execute([$customer_id, $customer_name, $cashback_name, $cashback_percent, $cashback_amount, $remark]);
 
-    $stmt2 = $pdo->prepare("SELECT distinct(id)
+    $stmt2 = $pdo->prepare("SELECT distinct(id),bill_date
         FROM receiveallpayment
         WHERE customer_id = ? and customer_name = ?
         ORDER BY id DESC
@@ -45,18 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btnsubmit']) && $_POST
     // $row123 = $stmt21->fetch(PDO::FETCH_ASSOC);
     // echo "<pre>";
     // print_r($row12);
-    // print_r($row123);
-    //  print_r($_POST);
+    
     // echo "</pre>";
-    // exit;
+    // exit();
     
     $stmt1 = $pdo->prepare("
 UPDATE receiveallpayment
 SET cashback = ?
-WHERE id = ? 
+WHERE id = ? and bill_date = ?
 ");
 
-$stmt1->execute([$cashback_amount, $row12['id']]);
+$stmt1->execute([$cashback_amount, $row12['id'],$row12['bill_date']]);
 
     //  echo "<pre>";
     // print_r($stmt1->rowCount());
@@ -332,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_id'])) {
                                                         <th>Customer Name</th>
                                                         <th>Amount Paid</th>
                                                         <th>CashBack Name</th>
-                                                        <th>CashBack Amount</th>
+                                                         <th>CashBack Amount</th>
                                                        <th>CashBack Percent</th>
                                                        <th>Remark</th>
                                                         <th>Created At</th>
@@ -341,9 +340,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_id'])) {
                                                 </thead>
                                                 <tbody>
                                                     <?php
-                                                    $rewards = $pdo->query("SELECT ac.*,rap.payamount,rap.customer_id FROM apply_cashback ac
-INNER JOIN  receiveallpayment rap
-    ON ac.customer_id COLLATE utf8mb4_general_ci = rap.customer_id COLLATE utf8mb4_general_ci Where rap.cashback>0");
+                                                    $rewards = $pdo->query("SELECT ac.*, rap.payamount
+FROM apply_cashback ac
+INNER JOIN (
+    SELECT 
+        customer_id COLLATE utf8mb4_general_ci AS customer_id,
+        payamount
+    FROM receiveallpayment
+    WHERE cashback > 0
+    GROUP BY customer_id
+) rap
+ON ac.customer_id COLLATE utf8mb4_general_ci = rap.customer_id
+
+");
                                                     $sn = 1;
                                                     foreach ($rewards as $reward) {
                                                         echo "<tr>";
@@ -358,12 +367,20 @@ INNER JOIN  receiveallpayment rap
                                                         echo "<td>{$reward['created_at']}</td>";
                                                         echo "<td>
     <button class='btn btn-sm btn-primary' onclick='editReward(" . json_encode($reward) . ")'>Edit</button>
-    <form method='post' style='display:inline;' onsubmit='return confirm(\"Are you sure you want to delete this reward?\")'>
-    <input type='hidden' name='customer_id' value='" . $reward['customer_id'] . "'>
-        <input type='hidden' name='delete_id' value='" . $reward['id'] . "'>
+
+    <form method='post' style='display:inline;' 
+          onsubmit='return confirm(\"Are you sure you want to delete this reward?\")'>
+        <input type='hidden' name='customer_id' value='" . htmlspecialchars($reward['customer_id']) . "'>
+        <input type='hidden' name='delete_id' value='" . htmlspecialchars($reward['id']) . "'>
         <button type='submit' class='btn btn-sm btn-danger'>Delete</button>
     </form>
+
+    <a href='print_cashback.php?id=" . htmlspecialchars($reward['id']) . "' 
+       class='btn btn-sm btn-success printBtn fw-bold d-block'>
+      print
+    </a>
 </td>";
+
                                                         echo "</tr>";
                                                         $sn++;
                                                     }

@@ -234,28 +234,47 @@ $nom_pincode = !empty($_POST['nominee_pincode'])
     // Add payment transaction (Ledger Entry) - SEPARATE ACTION
   if (isset($_POST['add_transaction'])) {
 
+    // echo "<pre>";
+    // print_r($_POST);
+    // echo "</pre>";
+    // exit();
     $id=$_GET['id'];
     $land_owner_id   = $_POST['land_owner_id'];
     $transaction_date = $_POST['transaction_date'];
     $payment_mode     = $_POST['payment_mode'];
 
     // Bank related (NULL safe)
-    $bank_name = !empty($_POST['bank_name']) ? $_POST['bank_name'] : null;
-    $account_number = !empty($_POST['account_no']) ? $_POST['account_no'] : null;
-    $ifsc_code = !empty($_POST['ifsc_code']) ? $_POST['ifsc_code'] : null;
+    $bank_name =
+    !empty($_POST['bank_name']) 
+        ? $_POST['bank_name'] 
+        : (!empty($_POST['chequebank_name']) 
+            ? $_POST['chequebank_name'] 
+            : null);
+
+    $account_number = !empty($_POST['ba_number']) ? $_POST['ba_number'] : null;
+    $ifsc_code = !empty($_POST['ifsc']) ? $_POST['ifsc'] : null;
+    $cheque_number=!empty($_POST['cheque_number']) ? $_POST['cheque_number'] : null;
+    $cheque_date=!empty($_POST['cheque_date']) ? $_POST['cheque_date'] : null;
+    $neft=!empty($_POST['neft_payment']) ? $_POST['neft_payment'] : null;
+     $rtgs=!empty($_POST['rtgs_payment']) ? $_POST['rtgs_payment'] : null;
+      $utr=!empty($_POST['utr_number']) ? $_POST['utr_number'] : null;
 
     $transaction_type = $_POST['transaction_type'];
-    $amount = (float) $_POST['amount'];
+   $amount =
+    !empty($_POST['cash_amount'])     ? (float) $_POST['cash_amount'] :
+    (!empty($_POST['cheque_amount'])  ? (float) $_POST['cheque_amount'] :
+    (!empty($_POST['transfer_amount'])? (float) $_POST['transfer_amount'] :
+    null));
 
     $dv_no   = !empty($_POST['dv_no']) ? $_POST['dv_no'] : null;
     $remarks = !empty($_POST['remarks']) ? $_POST['remarks'] : null;
 
     // Required validation
     if (empty($transaction_date) || empty($payment_mode) || empty($transaction_type) || empty($amount)) {
-        echo "<script>
-            alert('Please fill all required transaction fields!');
-            window.location.href='?id={$land_owner_id}';
-        </script>";
+        // echo "<script>
+        //     alert('Please fill all required transaction fields!');
+        //     window.location.href='?id={$land_owner_id}';
+        // </script>";
         exit;
     }
 
@@ -271,9 +290,15 @@ $nom_pincode = !empty($_POST['nominee_pincode'])
             transaction_type,
             amount,
             dv_no,
+            cheque_number,
+            cheque_date,
+            neft,
+            rtgs,
+            utr,
+            created_at,
             remarks
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, now(), ?)
     ");
 
     if ($stmt->execute([
@@ -286,6 +311,11 @@ $nom_pincode = !empty($_POST['nominee_pincode'])
         $transaction_type,
         $amount,
         $dv_no,
+        $cheque_number,
+        $cheque_date,
+        $neft,
+        $rtgs,
+        $utr,
         $remarks
     ])) {
         echo "<script>
@@ -634,7 +664,7 @@ if (isset($_GET['id'])) {
                               </div>
                               <div class="form-group col-md-3">
                                 <label>Bank Name:</label>
-                                <input type="text" class="form-control" name="bank_name" id="bank_name" placeholder="Enter Bank Name">
+                                <input type="text" class="form-control" name="chequebank_name" id="chequebank_name" placeholder="Enter Bank Name">
                               </div>
                               <div class="form-group col-md-3">
                                 <label>Cheque Date:</label>
@@ -663,15 +693,15 @@ if (isset($_GET['id'])) {
                               </div>
                                <div class="form-group col-md-4">
                                 <label>Bank Name:</label>
-                                <input type="text" class="form-control bank-transfer-field" name="utr_number" id="utr_number" placeholder="Enter UTR Number">
+                                <input type="text" class="form-control bank-transfer-field" name="bank_name" id="bank_name" placeholder="Enter UTR Number">
                               </div>
                                <div class="form-group col-md-4">
                                 <label>Bank Account Number:</label>
-                                <input type="text" class="form-control bank-transfer-field" name="utr_number" id="utr_number" placeholder="Enter UTR Number">
+                                <input type="text" class="form-control bank-transfer-field" name="ba_number" id="ba_number" placeholder="Enter UTR Number">
                               </div>
                                <div class="form-group col-md-4">
                                 <label>Bank IFSC Code:</label>
-                                <input type="text" class="form-control bank-transfer-field" name="utr_number" id="utr_number" placeholder="Enter UTR Number">
+                                <input type="text" class="form-control bank-transfer-field" name="ifsc" id="ifsc" placeholder="Enter UTR Number">
                               </div>
                             </div>
                           </div>
@@ -757,10 +787,16 @@ if (isset($_GET['id'])) {
                                                                                     <th>Bank</th>
                                                                                     <th>Bank Account Number</th>
                                                                                     <th>Bank IFSC Code</th>
+                                                                                    <th>Cheque Number</th>
+                                                                                    <th>Cheque Date</th>
+                                                                                    <th>NEFT Ref. No.</th>
+                                                                                    <th>RTGS Ref. No.</th>
+                                                                                    <th>UTR Ref. No.</th>
                                                                                     <th>Type</th>
                                                                                     <th>Amount</th>
                                                                                     <th>D.V. No.</th>
                                                                                     <th>Remarks</th>
+                                                                                    <th>Created_at</th>
                                                                                     <th>Action</th>
                                                                                 </tr>
                                                                             </thead>
@@ -785,6 +821,11 @@ if (isset($_GET['id'])) {
                                                                                             <td><?php echo $trans['bank_name'] ? htmlspecialchars($trans['bank_name']) : '-'; ?></td>
                                                                                             <td><?php echo $trans['account_number'] ? htmlspecialchars($trans['account_number']) : '-'; ?></td>
                                                                                             <td><?php echo $trans['ifsc'] ? htmlspecialchars($trans['ifsc']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['cheque_number'] ? htmlspecialchars($trans['cheque_number']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['cheque_date'] ? htmlspecialchars($trans['cheque_date']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['neft'] ? htmlspecialchars($trans['neft']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['rtgs'] ? htmlspecialchars($trans['rtgs']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['utr'] ? htmlspecialchars($trans['utr']) : '-'; ?></td>
                                                                                             <td>
                                                                                                 <span class="badge <?php echo $trans['transaction_type'] == 'credit' ? 'bg-success' : 'bg-danger'; ?>">
                                                                                                     <?php echo strtoupper($trans['transaction_type']); ?>
@@ -792,7 +833,9 @@ if (isset($_GET['id'])) {
                                                                                             </td>
                                                                                             <td class="fw-bold">₹<?php echo number_format($trans['amount'], 2); ?></td>
                                                                                             <td><?php echo $trans['dv_no'] ? htmlspecialchars($trans['dv_no']) : '-'; ?></td>
+                                                                                            
                                                                                             <td><?php echo $trans['remarks'] ? htmlspecialchars($trans['remarks']) : '-'; ?></td>
+                                                                                            <td><?php echo $trans['created_at'] ? htmlspecialchars($trans['created_at']) : '-'; ?></td>
                                                                                             <td>
                                                                                                 <form method="post" class="d-inline" onsubmit="return confirm('Delete this transaction?');">
                                                                                                     <input type="hidden" name="delete_transaction_id" value="<?php echo $trans['id']; ?>">

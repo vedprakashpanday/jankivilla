@@ -397,7 +397,10 @@ $running_balance = 0;
                             <td><?php echo $serial++; ?></td>
                             <td><?php echo date('d-m-Y', strtotime($trans['transaction_date'])); ?></td>
                             <td><?php echo $trans['payment_mode'] == 'cash' ? '✓' : ''; ?></td>
-                            <td><?php echo $trans['payment_mode'] == 'bank' ? htmlspecialchars($trans['bank_name']) : ''; ?></td>
+                            <td><?= in_array($trans['payment_mode'], ['bank_transfer','cheque'])
+        ? htmlspecialchars($trans['bank_name'])
+        : '' ?>
+</td>
                             <td><?php echo htmlspecialchars($trans['dv_no'] ?? ''); ?></td>
                             <td class="credit-amount"><?php echo $credit_amt > 0 ? '₹' . number_format($credit_amt, 2) : '-'; ?></td>
                             <td class="debit-amount"><?php echo $debit_amt > 0 ? '₹' . number_format($debit_amt, 2) : '-'; ?></td>
@@ -493,7 +496,7 @@ $running_balance = 0;
         <button class="print-btn" onclick="window.print()">
             <i class="fas fa-print"></i> Print Invoice
         </button>
-        <a href="landowner.php" class="back-btn">
+        <a href="lopayment.php" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back to List
         </a>
     </div>
