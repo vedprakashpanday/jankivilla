@@ -538,7 +538,7 @@
                                                     <a href="#">Map</a>
                                                     <ul class="submenu">
                                                         <li><a href="2D.php" title="Phase 1 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 1</a></li>
-                                                        <li><a href="Phase2map.php" title="Phase 2 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 2</a></li>
+                                                        <!-- <li><a href="Phase2map.php" title="Phase 2 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 2</a></li> -->
                                                     </ul>
                                                 </li>
 
@@ -561,6 +561,7 @@
                                                     <a href="#">Login</a>
                                                     <ul class="submenu">
                                                         <li><a href="login.php" title="Login - Hari Homes | Amitabh Builders & Developers">Associate</a></li>
+                                                        <li><a href="employee.php" title="Login - Hari Homes | Amitabh Builders & Developers">Employee</a></li>
                                                         <li><a href="Customer_Login.php" title="Customer Login - Amitabh Builders & Developers | Amitabh Builders & Developers">Customer</a></li>
                                                     </ul>
                                                 </li>

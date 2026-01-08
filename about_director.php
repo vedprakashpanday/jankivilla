@@ -60,6 +60,70 @@
     <link rel="stylesheet" href="css/spacing.css">
     <link rel="stylesheet" href="css/sweetalert2.min.css">
     <link rel="stylesheet" href="css/main.css">
+
+    <style>
+        .director-wrapper {
+            background: #ffffff;
+            padding: 40px;
+            border-left: 4px solid #c62828;
+        }
+
+        .director-header {
+            margin-bottom: 28px;
+        }
+
+        .director-title {
+            color: #c62828;
+            font-weight: 600;
+            font-size: 30px;
+        }
+
+        .director-name {
+            margin-top: 14px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .director-designation {
+            font-size: 15px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .director-content p {
+            font-size: 16px;
+            line-height: 1.9;
+            color: #444;
+            margin-bottom: 22px;
+        }
+
+        .director-section {
+            margin-top: 36px;
+        }
+
+        .director-section h6 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: #222;
+        }
+
+        .director-section p {
+            font-size: 16px;
+            line-height: 1.9;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        .director-signoff {
+            margin-top: 40px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -207,12 +271,85 @@
                 <div class="container" style="padding-top:40px; padding-bottom:40px;">
                     <div class="row justify-content-center text-center">
                         <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 mb-15 wow fadeInDown" data-wow-delay=".5s">
-                            <!-- <img src="image/HAriTeam/Direc.png" alt="best plot saler in darbhanga, cheap and best plot saler in darbhanga" title="Darbhanga Plots Dealers" /><br /> -->
 
-                            <span style="color:red;font-weight:600;font-size:30px;">Director</span><br />
+                            <div class="director-wrapper">
 
+                                <div class="director-header">
+                                    <span class="director-title">Director</span>
+                                    <h4 class="director-name">Amitabh Kumar</h4>
+                                    <p class="director-designation">Chairman &amp; Managing Director</p>
+                                </div>
+
+                                <div class="director-content">
+
+                                    <p>
+                                        I extend my sincere appreciation to our team for their dedication, integrity,
+                                        and consistent efforts. Their commitment remains the cornerstone of our growth
+                                        and credibility.
+                                    </p>
+
+                                    <p>
+                                        The real estate sector is evolving rapidly. Adapting to change is no longer a
+                                        choice but a strategic necessity. By embracing data-driven insights, digital
+                                        platforms, and modern marketing practices, we continue to identify new
+                                        opportunities while strengthening our leadership position.
+                                    </p>
+
+                                    <p>
+                                        Our approach is rooted in innovation and a strong customer-first mindset.
+                                        Transparency, trust, and long-term relationships with customers, partners,
+                                        and stakeholders guide every decision we make.
+                                    </p>
+
+                                </div>
+
+                                <div class="director-section">
+                                    <h6>Our Values</h6>
+                                    <p>
+                                        We operate with a deep sense of responsibility, focusing on ethical conduct,
+                                        social commitment, adoption of modern technology, and strict adherence to
+                                        statutory and regulatory frameworks.
+                                    </p>
+                                </div>
+
+                                <div class="director-section">
+                                    <h6>Our Commitments</h6>
+                                    <p>
+                                        Through AI-driven analytics, digital platforms, online booking systems, and
+                                        secure digital payments, we simplify processes and ensure transparency and
+                                        convenience for every customer.
+                                    </p>
+
+                                    <p>
+                                        Making quality housing affordable remains a core priority. We design
+                                        customer-friendly, transparent, and cost-effective solutions that help
+                                        families realize the dream of home ownership.
+                                    </p>
+
+                                    <p>
+                                        Compliance with RERA norms and government regulations is non-negotiable and
+                                        reflects our promise of credibility, safety, and long-term trust.
+                                    </p>
+                                </div>
+
+                                <div class="director-section">
+                                    <h6>Leadership Focus</h6>
+                                    <p>
+                                        My focus remains on long-term vision, empowering teams, sustainable
+                                        development, customer-centric decision making, and building communities
+                                        that stand the test of time.
+                                    </p>
+                                </div>
+
+                                <div class="director-signoff">
+                                    Together, we move forward with purpose—creating lasting value, trust, and
+                                    a future we can all be proud of.
+                                </div>
+
+                            </div>
 
                         </div>
+
                     </div>
                 </div>
             </div>

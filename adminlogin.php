@@ -1,504 +1,115 @@
 ﻿<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 include_once 'connectdb.php';
 
-require 'vendor/autoload.php'; // PHPMailer autoload
+require 'vendor/autoload.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Function to send OTP email
-// function sendOtpEmail($pdo, $sponsorid, $sponsor_name, $otp)
-// {
-//     try {
-//         $mail = new PHPMailer(true);
-//         $mail->SMTPDebug = 0;
-//         $mail->isSMTP();
-//         $mail->Host = 'smtp.gmail.com';
-//         $mail->SMTPAuth = true;
-//         $mail->Username = 'amitabhkmr989@gmail.com';
-//         $mail->Password = 'luqa nzkd ffjj lehy';
-//         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-//         $mail->Port = 587;
-
-//         $mail->setFrom('amitabhkmr989@gmail.com', 'Amitabh ');
-//         $mail->addAddress('amitabhkmr989@gmail.com', $sponsor_name);
-//         $mail->isHTML(true);
-//         $mail->Subject = 'Your OTP for Login';
-//         $mail->Body = "Hello {$sponsor_name},<br><br>Your OTP for login is: <strong>$otp</strong><br>This OTP is valid for 5 minutes.<br>Thank you!";
-
-//         return $mail->send(); // Return true on success, false on failure
-//     } catch (Exception $e) {
-//         error_log("Failed to send OTP. Error: {$e->getMessage()}");
-//         return false;
-//     }
-// }
-
-// // Function to display OTP form
-// function displayOtpForm($pdo, $error = '')
-// {
-//     $errorHtml = $error ? "<p class=\"error\">$error</p>" : '';
-//     $sponsorid = $_SESSION['temp_sponsor_id'] ?? '';
-//     echo '<!DOCTYPE html>
-// <html lang="en">
-// <head>
-//     <meta charset="UTF-8">
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//     <title>Verify OTP</title>
-//     <style>
-//         body {
-//             font-family: Arial, sans-serif;
-//             background-color: #f4f4f4;
-//             display: flex;
-//             justify-content: center;
-//             align-items: center;
-//             height: 100vh;
-//             margin: 0;
-//         }
-//         .otp-container {
-//             background-color: #fff;
-//             padding: 30px;
-//             border-radius: 10px;
-//             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-//             width: 100%;
-//             max-width: 400px;
-//             text-align: center;
-//         }
-//         .otp-container h2 {
-//             color: #333;
-//             margin-bottom: 20px;
-//         }
-//         .otp-container p {
-//             color: #666;
-//             margin-bottom: 20px;
-//         }
-//         .otp-container .error {
-//             color: #dc3545;
-//             margin-bottom: 20px;
-//         }
-//         .otp-container label {
-//             display: block;
-//             text-align: left;
-//             color: #333;
-//             margin-bottom: 5px;
-//             font-weight: bold;
-//         }
-//         .otp-container input[type="text"] {
-//             width: 100%;
-//             padding: 10px;
-//             margin-bottom: 20px;
-//             border: 1px solid #ddd;
-//             border-radius: 5px;
-//             box-sizing: border-box;
-//             font-size: 16px;
-//         }
-//         .otp-container button {
-//             background-color: #007bff;
-//             color: #fff;
-//             padding: 10px 20px;
-//             border: none;
-//             border-radius: 5px;
-//             cursor: pointer;
-//             font-size: 16px;
-//             transition: background-color 0.3s;
-//         }
-//         .otp-container button:hover {
-//             background-color: #0056b3;
-//         }
-//         .otp-container .resend-link {
-//             display: inline-block;
-//             margin-top: 10px;
-//             color: #007bff;
-//             text-decoration: none;
-//             font-size: 14px;
-//         }
-//         .otp-container .resend-link:hover {
-//             text-decoration: underline;
-//         }
-//         #timer {
-//             color: #333;
-//             font-weight: bold;
-//             margin-bottom: 10px;
-//         }
-//     </style>
-// </head>
-// <body>
-//     <div class="otp-container">
-//         <h2>Verify Your OTP</h2>
-//         ' . $errorHtml . '
-//         <p>OTP has been sent to your email. Please check and enter it below.</p>
-//         <div id="timer">Time remaining: 5:00</div>
-//         <form method="POST" action="adminlogin.php">
-//             <label for="otp">Enter OTP:</label>
-//             <input type="text" id="otp" name="otp" required>
-//             <button type="submit" name="verify_otp">Verify OTP</button>
-//         </form>
-//         <div id="resend-section">
-//             <a href="?resend_otp=1" class="resend-link">Resend OTP</a>
-//         </div>
-//     </div>
-//     <script>
-//         let timeLeft = 300; // 10 minutes in seconds
-//         const timerElement = document.getElementById("timer");
-//         let hasClearedOtp = false;
-
-//         function updateTimer() {
-//             const minutes = Math.floor(timeLeft / 60);
-//             const seconds = timeLeft % 60;
-//             timerElement.textContent = `Time remaining: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-//             if (timeLeft <= 0 && !hasClearedOtp) {
-//                 timerElement.textContent = "OTP has expired.";
-//                 hasClearedOtp = true;
-//                 // Send AJAX request to clear OTP
-//                 fetch("?clear_otp=1&sponsor_id=' . $sponsorid . '", { method: "POST" })
-//                     .then(response => response.text())
-//                     .then(data => console.log("OTP cleared:", data))
-//                     .catch(error => console.error("Error clearing OTP:", error));
-//             } else if (timeLeft > 0) {
-//                 timeLeft--;
-//                 setTimeout(updateTimer, 1000);
-//             }
-//         }
-//         updateTimer();
-//     </script>
-// </body>
-// </html>';
-// }
-
-// // Step 1: Handle initial login form submission
-// if (isset($_POST['btn_login'])) {
-//     $sponsorid = $_POST['sponsor_id'];
-//     $sponsorpass = $_POST['sponsor_pass'];
-
-//     // Check credentials with status = 'active'
-//     $select = $pdo->prepare("SELECT * FROM tbl_hire WHERE sponsor_id = ? AND sponsor_pass = ? AND status = 'active'");
-//     $select->execute([$sponsorid, $sponsorpass]);
-//     $row = $select->fetch(PDO::FETCH_ASSOC);
-
-//     if ($row && $row['sponsor_id'] === $sponsorid && $row['sponsor_pass'] === $sponsorpass && $row['status'] === 'active') {
-//         // Generate OTP
-//         $otp = rand(100000, 999999); // 6-digit OTP
-//         $otp_created_at = date('Y-m-d H:i:s'); // Current timestamp
-
-//         // Store OTP and timestamp in database
-//         $update = $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ? AND status = 'active'");
-//         $update->execute([$otp, $otp_created_at, $sponsorid]);
-
-//         // Store temporary session data
-//         $_SESSION['temp_sponsor_id'] = $row['sponsor_id'];
-//         $_SESSION['temp_sponsor_pass'] = $row['sponsor_pass'];
-//         $_SESSION['temp_sponsor_name'] = $row['s_name'];
-//         $_SESSION['temp_status'] = $row['status'];
-
-//         // Send OTP via email
-//         if (sendOtpEmail($pdo, $sponsorid, $row['s_name'], $otp)) {
-//             // Display OTP form
-//             displayOtpForm($pdo);
-//             exit();
-//         } else {
-//             echo 'Failed to send OTP. Please try again.';
-//         }
-//     } else {
-//         $errormsg = 'Invalid credentials or inactive account';
-//         echo $errormsg;
-//     }
-// }
-
-// // Step 2: Handle OTP resend
-// if (isset($_GET['resend_otp']) && $_GET['resend_otp'] == 1) {
-//     $sponsorid = $_SESSION['temp_sponsor_id'];
-//     $sponsor_name = $_SESSION['temp_sponsor_name'];
-
-//     // Check if user is still in temp session
-//     if (!$sponsorid || !$sponsor_name) {
-//         header("Location: adminlogin.php"); // Redirect to login page if session expired
-//         exit();
-//     }
-
-//     // Generate new OTP
-//     $otp = rand(100000, 999999);
-//     $otp_created_at = date('Y-m-d H:i:s');
-
-//     // Update OTP and timestamp
-//     $update = $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ? AND status = 'active'");
-//     $update->execute([$otp, $otp_created_at, $sponsorid]);
-
-//     // Send new OTP
-//     if (sendOtpEmail($pdo, $sponsorid, $sponsor_name, $otp)) {
-//         // Stay on OTP form
-//         displayOtpForm($pdo, 'New OTP sent to your email.');
-//         exit();
-//     } else {
-//         displayOtpForm($pdo, 'Failed to resend OTP. Please try again.');
-//         exit();
-//     }
-// }
-
-// // Step 3: Handle OTP clearing when timer expires
-// if (isset($_GET['clear_otp']) && $_GET['clear_otp'] == 1) {
-//     $sponsorid = $_GET['sponsor_id'] ?? '';
-//     if ($sponsorid && $sponsorid === ($_SESSION['temp_sponsor_id'] ?? '')) {
-//         $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ? AND status = 'active'");
-//         $update->execute([$sponsorid]);
-//         echo 'OTP cleared';
-//     } else {
-//         echo 'Invalid request';
-//     }
-//     exit();
-// }
-
-// // Step 4: Handle OTP verification
-// if (isset($_POST['verify_otp'])) {
-//     $entered_otp = trim($_POST['otp']);
-//     $sponsorid = $_SESSION['temp_sponsor_id'];
-
-//     // Log for debugging
-//     error_log("Verifying OTP for sponsor_id: $sponsorid, entered OTP: $entered_otp");
-
-//     // Check if session is valid
-//     if (!$sponsorid) {
-//         header("Location: adminlogin.php"); // Redirect to login if session expired
-//         exit();
-//     }
-
-//     // Check OTP and expiration
-//     $select = $pdo->prepare("SELECT * FROM tbl_hire WHERE sponsor_id = ? AND otp = ? AND status = 'active'");
-//     $select->execute([$sponsorid, $entered_otp]);
-//     $row = $select->fetch(PDO::FETCH_ASSOC);
-
-//     if ($row && $row['otp'] == $entered_otp && $row['status'] === 'active') {
-//         // Check OTP expiration (5 minutes = 600 seconds)
-//         $otp_created_at = strtotime($row['otp_created_at']);
-//         $current_time = time();
-//         if ($current_time - $otp_created_at > 300) {
-//             // OTP expired
-//             $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?");
-//             $update->execute([$sponsorid]);
-//             echo '<!DOCTYPE html>
-// <html lang="en">
-// <head>
-//     <meta charset="UTF-8">
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//     <title>Verify OTP</title>
-//     <style>
-//         body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-//         .otp-container { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; text-align: center; }
-//         .otp-container h2 { color: #333; margin-bottom: 20px; }
-//         .otp-container p { color: #666; margin-bottom: 20px; }
-//         .otp-container .error { color: #dc3545; margin-bottom: 20px; }
-//         .otp-container .resend-link { color: #007bff; text-decoration: none; font-size: 14px; }
-//         .otp-container .resend-link:hover { text-decoration: underline; }
-//     </style>
-// </head>
-// <body>
-//     <div class="otp-container">
-//         <h2>Verify Your OTP</h2>
-//         <p class="error">OTP has expired. Please request a new one.</p>
-//         <p><a href="?resend_otp=1" class="resend-link">Resend OTP</a></p>
-//     </div>
-// </body>
-// </html>';
-//             exit();
-//         }
-
-//         // OTP valid, clear it
-//         $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?");
-//         $update->execute([$sponsorid]);
-
-//         // Set permanent session variables
-//         $_SESSION['sponsor_id'] = $row['sponsor_id'];
-//         $_SESSION['sponsor_pass'] = $row['sponsor_pass'];
-//         $_SESSION['sponsor_name'] = $row['s_name'];
-//         $_SESSION['status'] = $row['status'];
-
-//         // Clear temporary session data
-//         unset($_SESSION['temp_sponsor_id']);
-//         unset($_SESSION['temp_sponsor_pass']);
-//         unset($_SESSION['temp_sponsor_name']);
-//         unset($_SESSION['temp_status']);
-
-//         // Handle "Remember Me"
-//         if (isset($_POST['remember_me']) && $_POST['remember_me'] == 'on') {
-//             setcookie('sponsor_login', json_encode(['sponsorid' => $row['sponsor_id'], 'sponsorpass' => $row['sponsor_pass']]), time() + 2592000, "/");
-//         } else {
-//             setcookie('sponsor_login', '', time() - 3600, "/");
-//         }
-
-//         // Display success message
-//         echo '<!DOCTYPE html>
-// <html lang="en">
-// <head>
-//     <meta charset="UTF-8">
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//     <title>Login Success</title>
-//     <style>
-//         body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-//         .success-container { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; text-align: center; }
-//         .success-container h2 { color: #28a745; margin-bottom: 20px; }
-//         .success-container p { color: #666; margin-bottom: 20px; }
-//     </style>
-// </head>
-// <body>
-//     <div class="success-container">
-//         <h2>Login Successful!</h2>
-//         <p>OTP verified successfully! Welcome to the dashboard.</p>
-//     </div>
-// </body>
-// </html>';
-//         header("Refresh:1; url=UI/admin/dashboard.php");
-//         exit();
-//     } else {
-//         // Log failure for debugging
-//         error_log("OTP verification failed for sponsor_id: $sponsorid, entered OTP: $entered_otp, DB OTP: " . ($row['otp'] ?? 'none'));
-//         // Invalid OTP
-//         displayOtpForm($pdo, 'Invalid OTP. Please try again.');
-//         exit();
-//     }
-// }
-
-// Function to send OTP email
-function sendOtpEmail($pdo, $user_id, $user_name, $user_email, $otp)
+// ==================== SEND OTP EMAIL FUNCTION (WITH DEBUG) ====================
+function sendOtpEmail($sponsorid, $sponsor_name, $user_email, $otp)
 {
     try {
         $mail = new PHPMailer(true);
-        $mail->SMTPDebug = 0;
+
+        // REMOVE THESE TWO LINES IN PRODUCTION!
+        $mail->SMTPDebug = 2;                                      // Enable verbose debug
+        $mail->Debugoutput = function ($str, $level) {              // Log to PHP error log
+            error_log("PHPMailer [$level]: $str");
+        };
+
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'amitabhkmr989@gmail.com';
-        $mail->Password = 'ronurtvturnjongr';
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'vedikavillage@gmail.com';             // Your Gmail
+        $mail->Password   = 'dehefyqgxqswmzzm';                 // Must be valid App Password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-        $mail->setFrom('amitabhkmr989@gmail.com', 'Amitabh');
-        $mail->addAddress('amitabhkmr989@gmail.com', 'Amitabh Kumar'); // Hardcoded as per original
+        $mail->Port       = 587;
+
+        $mail->setFrom('vedikavillage@gmail.com', 'Vedika Village');
+        $mail->addAddress($user_email, $sponsor_name);             // Real user email
+
         $mail->isHTML(true);
-        $mail->Subject = 'Your OTP for Login';
-        $mail->Body = "Hello {$user_name},<br><br>Your OTP for login is: <strong>$otp</strong><br>This OTP is valid for 5 minutes.<br>Thank you!";
-        return $mail->send();
+        $mail->Subject = 'Your Login OTP - Vedika Village';
+        $mail->Body    = "
+            <h2>Hello {$sponsor_name},</h2>
+            <p>Your OTP for login is:</p>
+            <h1 style='color:#007bff;'><strong>$otp</strong></h1>
+            <p>This OTP is valid for <strong>5 minutes only</strong>.</p>
+            <p>Thank you!<br><small>Vedika Village Team</small></p>
+        ";
+
+        $mail->send();
+        return true;
     } catch (Exception $e) {
-        error_log("Failed to send OTP. Error: {$e->getMessage()}");
+        error_log("OTP Email failed for $user_email. Error: " . $mail->ErrorInfo);
         return false;
     }
 }
 
-// Function to display OTP form
-function displayOtpForm($pdo, $error = '')
+// ==================== DISPLAY OTP FORM (ALWAYS SHOWS) ====================
+function displayOtpForm($error = '', $success = '', $debugOtp = null)
 {
-    $errorHtml = $error ? "<p class=\"error\">$error</p>" : '';
-    $user_id = $_SESSION['temp_user_id'] ?? '';
+    $errorHtml   = $error ? "<div class='alert error'>$error</div>" : '';
+    $successHtml = $success ? "<div class='alert success'>$success</div>" : '';
+    $debugOtpHtml = $debugOtp ? "<div class='alert debug'>Warning: OTP (Dev Mode): <strong style='font-size:20px;color:red;'>$debugOtp</strong></div>" : '';
+
     echo '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
+    <title>Verify OTP - Vedika Village</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .otp-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .otp-container h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .otp-container p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        .otp-container .error {
-            color: #dc3545;
-            margin-bottom: 20px;
-        }
-        .otp-container label {
-            display: block;
-            text-align: left;
-            color: #333;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .otp-container input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .otp-container button {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        .otp-container button:hover {
-            background-color: #0056b3;
-        }
-        .otp-container .resend-link {
-            display: inline-block;
-            margin-top: 10px;
-            color: #007bff;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .otp-container .resend-link:hover {
-            text-decoration: underline;
-        }
-        #timer {
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+        body {font-family: Arial, sans-serif;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);display: flex;justify-content: center;align-items: center;height: 100vh;margin: 0;}
+        .otp-box {background: white;padding: 40px;border-radius: 15px;box-shadow: 0 15px 35px rgba(0,0,0,0.3);width: 100%;max-width: 420px;text-align: center;}
+        h2 {color: #333;margin-bottom: 10px;}
+        .alert {padding: 12px;margin: 15px 0;border-radius: 8px;font-size: 15px;}
+        .error {background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+        .success {background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+        .debug {background:#fff3cd;color:#856404;border:1px solid #ffeaa7;}
+        input[type="text"] {width: 100%;padding: 15px;margin: 10px 0;border: 2px solid #ddd;border-radius: 8px;font-size: 18px;text-align:center;letter-spacing: 5px;}
+        button {background:#007bff;color:white;padding: 14px 30px;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin:10px 0;width:100%;}
+        button:hover {background:#0056b3;}
+        .resend {margin-top: 15px;font-size: 14px;}
+        .resend a {color:#007bff;text-decoration:none;}
+        .resend a:hover {text-decoration:underline;}
+        #timer {font-weight:bold;color:#e74c3c;margin:15px 0;}
     </style>
 </head>
 <body>
-    <div class="otp-container">
-        <h2>Verify Your OTP</h2>
+    <div class="otp-box">
+        <h2>Enter OTP</h2>
+        ' . $successHtml . '
         ' . $errorHtml . '
-        <p>OTP has been sent to your email. Please check and enter it below.</p>
+        ' . $debugOtpHtml . '
+        <p>We have sent a 6-digit OTP to your email.</p>
         <div id="timer">Time remaining: 5:00</div>
-        <form method="POST" action="adminlogin.php">
-            <label for="otp">Enter OTP:</label>
-            <input type="text" id="otp" name="otp" required>
+        
+        <form method="POST">
+            <input type="text" name="otp" maxlength="6" placeholder="______" required autocomplete="off">
             <button type="submit" name="verify_otp">Verify OTP</button>
         </form>
-        <div id="resend-section">
-            <a href="?resend_otp=1" class="resend-link">Resend OTP</a>
+        
+        <div class="resend">
+            Didn\'t receive? <a href="?resend_otp=1">Resend OTP</a>
         </div>
     </div>
+
     <script>
-        let timeLeft = 300; // 5 minutes in seconds
-        const timerElement = document.getElementById("timer");
-        let hasClearedOtp = false;
+        let timeLeft = 300;
+        const timer = document.getElementById("timer");
         function updateTimer() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `Time remaining: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-            if (timeLeft <= 0 && !hasClearedOtp) {
-                timerElement.textContent = "OTP has expired.";
-                hasClearedOtp = true;
-                fetch("?clear_otp=1&user_id=' . $user_id . '", { method: "POST" })
-                    .then(response => response.text())
-                    .then(data => console.log("OTP cleared:", data))
-                    .catch(error => console.error("Error clearing OTP:", error));
-            } else if (timeLeft > 0) {
+            let m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+            let s = String(timeLeft % 60).padStart(2, "0");
+            timer.textContent = `Time remaining: ${m}:${s}`;
+            if (timeLeft <= 0) {
+                timer.innerHTML = "<span style=\'color:red;\'>OTP Expired!</span>";
+                document.querySelector("button").disabled = true;
+            } else {
                 timeLeft--;
                 setTimeout(updateTimer, 1000);
             }
@@ -507,224 +118,172 @@ function displayOtpForm($pdo, $error = '')
     </script>
 </body>
 </html>';
+    exit();
 }
 
-// Step 1: Handle initial login form submission
+// ==================== MAIN LOGIN LOGIC ====================
 if (isset($_POST['btn_login'])) {
-    $user_id = $_POST['sponsor_id'];
-    $password = $_POST['sponsor_pass'];
+    $user_id = trim($_POST['sponsor_id']);
+    $password = trim($_POST['sponsor_pass']);
 
-    // Check tbl_hire first
-    $select = $pdo->prepare("SELECT * FROM tbl_hire WHERE sponsor_id = ? AND sponsor_pass = ? AND status = 'active'");
-    $select->execute([$user_id, $password]);
-    $row = $select->fetch(PDO::FETCH_ASSOC);
+    // Try tbl_hire first
+    $stmt = $pdo->prepare("SELECT * FROM tbl_hire WHERE sponsor_id = ? AND sponsor_pass = ? AND status = 'active'");
+    $stmt->execute([$user_id, $password]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($row) {
-        // Account found in tbl_hire
-        $otp = rand(100000, 999999); // 6-digit OTP
-        $otp_created_at = date('Y-m-d H:i:s');
-        $update = $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ?");
-        $update->execute([$otp, $otp_created_at, $user_id]);
+    $user_type = null;
+    $user_email = null;
+    $user_name = null;
 
-        // Store temporary session data
-        $_SESSION['temp_user_id'] = $row['sponsor_id'];
-        $_SESSION['temp_user_name'] = $row['s_name'];
-        $_SESSION['temp_user_email'] = 'amitabhkmr989@gmail.com'; // Hardcoded as per original
-        $_SESSION['temp_status'] = $row['status'];
-        $_SESSION['temp_user_type'] = 'hire';
-
-        if (sendOtpEmail($pdo, $user_id, $row['s_name'], $_SESSION['temp_user_email'], $otp)) {
-            displayOtpForm($pdo);
-            exit();
-        } else {
-            echo 'Failed to send OTP. Please try again.';
-        }
+    if ($user) {
+        $user_type = 'hire';
+        $user_email = $user['email'] ?? 'noemail@vedika.com';
+        $user_name = $user['s_name'];
     } else {
-        // Check employees table
-        $select = $pdo->prepare("SELECT * FROM employees WHERE emp_id = ? AND password = ? AND role = 'Admin'");
-        $select->execute([$user_id, $password]);
-        $employee = $select->fetch(PDO::FETCH_ASSOC);
+        // Try employees table (Admin only)
+        $stmt = $pdo->prepare("SELECT * FROM employees WHERE emp_id = ? AND password = ? AND role = 'Admin'");
+        $stmt->execute([$user_id, $password]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($employee) {
-            // Account found in employees with role = Admin
-            $otp = rand(100000, 999999); // 6-digit OTP
-            $otp_created_at = date('Y-m-d H:i:s');
-            $update = $pdo->prepare("UPDATE employees SET otp = ?, created_at = ? WHERE emp_id = ?");
-            $update->execute([$otp, $otp_created_at, $user_id]);
-
-            // Store temporary session data
-            $_SESSION['temp_user_id'] = $employee['emp_id'];
-            $_SESSION['temp_user_name'] = $employee['emp_name'];
-            $_SESSION['temp_user_email'] = $employee['email'];
-            $_SESSION['temp_status'] = 'active'; // Assuming active status for employees
-            $_SESSION['temp_role'] = $employee['role'];
-            $_SESSION['temp_user_type'] = 'employee';
-
-            if (sendOtpEmail($pdo, $user_id, $employee['emp_name'], $employee['email'], $otp)) {
-                displayOtpForm($pdo);
-                exit();
-            } else {
-                echo 'Failed to send OTP. Please try again.';
-            }
-        } else {
-            echo 'Invalid credentials, inactive account, or non-Admin role';
+        if ($user) {
+            $user_type = 'employee';
+            $user_email = $user['email'];
+            $user_name = $user['emp_name'];
         }
+    }
+
+    if (!$user) {
+        echo "<h3 style='color:red;text-align:center;margin-top:50px;'>Invalid credentials or inactive account!</h3>";
+        exit();
+    }
+
+    // Generate OTP
+    $otp = rand(100000, 999999);
+    $now = date('Y-m-d H:i:s');
+
+    if ($user_type === 'hire') {
+        $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ?")
+            ->execute([$otp, $now, $user_id]);
+    } else {
+        $pdo->prepare("UPDATE employees SET otp = ?, created_at = ? WHERE emp_id = ?")
+            ->execute([$otp, $now, $user_id]);
+    }
+
+    // Store temp session
+    $_SESSION['temp_user_id']   = $user_id;
+    $_SESSION['temp_user_name'] = $user_name;
+    $_SESSION['temp_user_email'] = $user_email;
+    $_SESSION['temp_user_type'] = $user_type;
+
+    // Try to send email
+    $emailSent = sendOtpEmail($user_id, $user_name, $user_email, $otp);
+
+    if ($emailSent) {
+        displayOtpForm('', 'OTP sent successfully to <strong>' . htmlspecialchars($user_email) . '</strong>');
+    } else {
+        // STILL SHOW FORM + REVEAL OTP (FOR TESTING)
+        displayOtpForm(
+            'Failed to send email (check logs). But you can still login.',
+            '',
+            $otp  // This shows OTP on screen in dev mode
+        );
     }
 }
 
-// Step 2: Handle OTP resend
-if (isset($_GET['resend_otp']) && $_GET['resend_otp'] == 1) {
-    $user_id = $_SESSION['temp_user_id'];
+// ==================== RESEND OTP ====================
+if (isset($_GET['resend_otp'])) {
+    if (!isset($_SESSION['temp_user_id'])) {
+        header("Location: adminlogin.php");
+        exit();
+    }
+
+    $user_id   = $_SESSION['temp_user_id'];
     $user_name = $_SESSION['temp_user_name'];
     $user_email = $_SESSION['temp_user_email'];
     $user_type = $_SESSION['temp_user_type'];
 
-    if (!$user_id || !$user_name || !$user_email) {
+    $otp = rand(100000, 999999);
+    $now = date('Y-m-d H:i:s');
+
+    if ($user_type === 'hire') {
+        $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ?")
+            ->execute([$otp, $now, $user_id]);
+    } else {
+        $pdo->prepare("UPDATE employees SET otp = ?, created_at = ? WHERE emp_id = ?")
+            ->execute([$otp, $now, $user_id]);
+    }
+
+    $sent = sendOtpEmail($user_id, $user_name, $user_email, $otp);
+    displayOtpForm(
+        $sent ? '' : 'Email failed again.',
+        $sent ? 'New OTP sent!' : '',
+        $sent ? null : $otp
+    );
+}
+
+// ==================== VERIFY OTP ====================
+if (isset($_POST['verify_otp'])) {
+    $entered = trim($_POST['otp']);
+    $user_id = $_SESSION['temp_user_id'] ?? null;
+    $type    = $_SESSION['temp_user_type'] ?? null;
+
+    if (!$user_id || !$type) {
         header("Location: adminlogin.php");
         exit();
     }
 
-    // Generate new OTP
-    $otp = rand(100000, 999999);
-    $otp_created_at = date('Y-m-d H:i:s');
+    $query = $type === 'hire'
+        ? "SELECT * FROM tbl_hire WHERE sponsor_id = ? AND otp = ?"
+        : "SELECT * FROM employees WHERE emp_id = ? AND otp = ? AND role = 'Admin'";
 
-    if ($user_type === 'hire') {
-        $update = $pdo->prepare("UPDATE tbl_hire SET otp = ?, otp_created_at = ? WHERE sponsor_id = ? AND status = 'active'");
-    } else {
-        $update = $pdo->prepare("UPDATE employees SET otp = ?, created_at = ? WHERE emp_id = ? AND role = 'Admin'");
+    $stmt = $pdo->prepare($query);
+    $stmt->execute([$user_id, $entered]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row || $row['otp'] != $entered) {
+        displayOtpForm('Invalid OTP. Try again.');
     }
-    $update->execute([$otp, $otp_created_at, $user_id]);
 
-    if (sendOtpEmail($pdo, $user_id, $user_name, $user_email, $otp)) {
-        displayOtpForm($pdo, 'New OTP sent to your email.');
-        exit();
-    } else {
-        displayOtpForm($pdo, 'Failed to resend OTP. Please try again.');
-        exit();
+    // Check expiry
+    $created_at = $type === 'hire' ? strtotime($row['otp_created_at']) : strtotime($row['created_at']);
+    if ((time() - $created_at) > 300) {
+        displayOtpForm('OTP has expired. Please request a new one.');
     }
-}
 
-// Step 3: Handle OTP clearing when timer expires
-if (isset($_GET['clear_otp']) && $_GET['clear_otp'] == 1) {
-    $user_id = $_GET['user_id'] ?? '';
-    $user_type = $_SESSION['temp_user_type'] ?? '';
+    // SUCCESS - Clear OTP & Login
+    $clear = $type === 'hire'
+        ? $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?")
+        : $pdo->prepare("UPDATE employees SET otp = NULL, created_at = NULL WHERE emp_id = ?");
+    $clear->execute([$user_id]);
 
-    if ($user_id && $user_id === ($_SESSION['temp_user_id'] ?? '')) {
-        if ($user_type === 'hire') {
-            $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?");
-        } else {
-            $update = $pdo->prepare("UPDATE employees SET otp = NULL, created_at = NULL WHERE emp_id = ?");
-        }
-        $update->execute([$user_id]);
-        echo 'OTP cleared';
+    // Set real session
+    if ($type === 'hire') {
+        $_SESSION['sponsor_id']   = $row['sponsor_id'];
+        $_SESSION['sponsor_name'] = $row['s_name'];
+        $_SESSION['status']       = $row['status'];
     } else {
-        echo 'Invalid request';
+        $_SESSION['sponsor_id']   = $row['emp_id'];
+        $_SESSION['sponsor_name'] = $row['emp_name'];
+        $_SESSION['role']         = $row['role'];
+        $_SESSION['status']       = 'active';
     }
+
+    // Clear temp data
+    unset($_SESSION['temp_user_id'], $_SESSION['temp_user_name'], $_SESSION['temp_user_email'], $_SESSION['temp_user_type']);
+
+    // Redirect
+    echo "<h2 style='text-align:center;color:green;margin-top:100px;'>Login Successful! Redirecting...</h2>";
+    header("Refresh: 2; url=UI/admin/dashboard.php");
     exit();
 }
 
-// Step 4: Handle OTP verification
-if (isset($_POST['verify_otp'])) {
-    $entered_otp = trim($_POST['otp']);
-    $user_id = $_SESSION['temp_user_id'];
-    $user_type = $_SESSION['temp_user_type'];
-
-    if (!$user_id || !$user_type) {
-        header("Location: adminlogin.php");
-        exit();
-    }
-
-    // Check OTP
-    if ($user_type === 'hire') {
-        $select = $pdo->prepare("SELECT * FROM tbl_hire WHERE sponsor_id = ? AND otp = ? AND status = 'active'");
-        $select->execute([$user_id, $entered_otp]);
-        $row = $select->fetch(PDO::FETCH_ASSOC);
-        $otp_created_at = $row ? strtotime($row['otp_created_at']) : 0;
-    } else {
-        $select = $pdo->prepare("SELECT * FROM employees WHERE emp_id = ? AND otp = ? AND role = 'Admin'");
-        $select->execute([$user_id, $entered_otp]);
-        $row = $select->fetch(PDO::FETCH_ASSOC);
-        $otp_created_at = $row ? strtotime($row['created_at']) : 0;
-    }
-
-    if ($row && $row['otp'] == $entered_otp) {
-        // Check OTP expiration (5 minutes = 300 seconds)
-        $current_time = time();
-        if ($current_time - $otp_created_at > 300) {
-            if ($user_type === 'hire') {
-                $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?");
-            } else {
-                $update = $pdo->prepare("UPDATE employees SET otp = NULL, created_at = NULL WHERE emp_id = ?");
-            }
-            $update->execute([$user_id]);
-            displayOtpForm($pdo, 'OTP has expired. Please request a new one.');
-            exit();
-        }
-
-        // OTP valid, clear it
-        if ($user_type === 'hire') {
-            $update = $pdo->prepare("UPDATE tbl_hire SET otp = NULL, otp_created_at = NULL WHERE sponsor_id = ?");
-            $_SESSION['sponsor_id'] = $row['sponsor_id'];
-            $_SESSION['sponsor_pass'] = $row['sponsor_pass'];
-            $_SESSION['sponsor_name'] = $row['s_name'];
-            $_SESSION['status'] = $row['status'];
-        } else {
-            $update = $pdo->prepare("UPDATE employees SET otp = NULL, created_at = NULL WHERE emp_id = ?");
-            $_SESSION['sponsor_id'] = $row['emp_id'];
-            $_SESSION['sponsor_pass'] = $row['password'];
-            $_SESSION['sponsor_name'] = $row['emp_name'];
-            $_SESSION['status'] = 'active'; // Assuming active for employees
-            $_SESSION['role'] = $row['role'];
-        }
-        $update->execute([$user_id]);
-
-        // Handle "Remember Me"
-        if (isset($_POST['remember_me']) && $_POST['remember_me'] == 'on') {
-            setcookie('sponsor_login', json_encode(['sponsorid' => $_SESSION['sponsor_id'], 'sponsorpass' => $_SESSION['sponsor_pass']]), time() + 2592000, "/");
-        } else {
-            setcookie('sponsor_login', '', time() - 3600, "/");
-        }
-
-        // Clear temporary session data
-        unset($_SESSION['temp_user_id']);
-        unset($_SESSION['temp_user_name']);
-        unset($_SESSION['temp_user_email']);
-        unset($_SESSION['temp_status']);
-        unset($_SESSION['temp_role']);
-        unset($_SESSION['temp_user_type']);
-
-        // Display success message and redirect
-        echo '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Success</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .success-container { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; text-align: center; }
-        .success-container h2 { color: #28a745; margin-bottom: 20px; }
-        .success-container p { color: #666; margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <div class="success-container">
-        <h2>Login Successful!</h2>
-        <p>OTP verified successfully! Welcome to the dashboard.</p>
-    </div>
-</body>
-</html>';
-        header("Refresh:1; url=UI/admin/dashboard.php");
-        exit();
-    } else {
-        error_log("OTP verification failed for user_id: $user_id, entered OTP: $entered_otp, DB OTP: " . ($row['otp'] ?? 'none'));
-        displayOtpForm($pdo, 'Invalid OTP. Please try again.');
-        exit();
-    }
-}
-
+// If someone opens this page directly without login
+// if (empty($_SESSION['temp_user_id']) && !isset($_POST['btn_login']) && !isset($_GET['resend_otp'])) {
+//     // Show normal login form or redirect
+//     header("Location: adminlogin.php"); // or your login page
+//     exit();
+// }
 ?>
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 

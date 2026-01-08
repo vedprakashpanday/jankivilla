@@ -1,4 +1,8 @@
 ﻿<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
 session_start();
 include_once "connectdb.php";
 
@@ -40,13 +44,26 @@ $sponsor_id = $_SESSION['sponsor_id']; // change this to session variable
 
 // Output level 1 members
 
-$level1_stmt = $pdo->prepare("SELECT r.mem_sid, r.m_name, r.sponsor_id, r.s_name,p.package,p.status,r.date_time
+$level1_stmt = $pdo->prepare("
+SELECT 
+    r.mem_sid,
+    r.m_name,
+    r.sponsor_id,
+    r.s_name,
+    p.package,
+    p.status,
+    r.date_time,
+    JSON_UNQUOTE(JSON_EXTRACT(r.designations, '$.designation')) AS designation
 FROM tbl_regist r
 LEFT JOIN tbl_package p ON r.mem_sid = p.member_id
-WHERE r.sponsor_id = :sponsor_id");
+WHERE r.sponsor_id = :sponsor_id
+AND JSON_UNQUOTE(JSON_EXTRACT(r.designations, '$.designation')) = 'Sales Executive (S.E.)'
+");
+
 $level1_stmt->bindParam(':sponsor_id', $sponsor_id);
 $level1_stmt->execute();
 $level1_members = $level1_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 foreach ($level1_members as $member) {
 }
@@ -295,40 +312,32 @@ foreach ($level10_members as $member) {
                                         <tbody>
                                             <?php
 
-                                            $i = 0;
-                                            foreach ($level1_members as $member) {
-                                                // Get commission data for the member
-                                                $commission_stmt = $pdo->prepare("
-SELECT SUM(scommission) AS searning, SUM(commission) AS cearning, SUM(w_balance) AS wearing
-FROM (
-SELECT scommission, 0 AS commission, 0 AS w_balance
-FROM tbl_sinc
-WHERE sponsor_id = :sponsor_id
-UNION ALL
-SELECT 0 AS scommission, commission, 0 AS w_balance
-FROM tbl_slinc
-WHERE sponsor_id = :sponsor_id
+                                          $designation = 'Sales Executive (S.E.)';
 
-) AS earnings
+$level1_stmt = $pdo->prepare("
+    SELECT 
+        mem_sid,
+        m_name,
+        sponsor_id,
+        s_name,
+        date_time,
+        designations
+    FROM tbl_regist
+    WHERE designation=:designation 
 ");
-                                                $commission_stmt->bindParam(':sponsor_id', $member['mem_sid']);
-                                                $commission_stmt->bindParam(':member_id', $member['mem_sid']);
-                                                $commission_stmt->execute();
-                                                $commission_data = $commission_stmt->fetch(PDO::FETCH_ASSOC);
 
-                                                // Get total commission for the member
-                                                $total = $commission_data['searning'] + $commission_data['cearning'];
+$level1_stmt->bindParam(':designation', $designation, PDO::PARAM_STR);
+$level1_stmt->execute();
 
+$level1_members1 = $level1_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// echo '<pre>';
+// print_r($level1_members1);
+// echo '</pre>';
+// exit;
+$i=0;
+                                            foreach ($level1_members1 as $member) {
                                                 $i++;
-
-
-                                                $status = $member['status'];
-                                                if ($status == 'active') {
-                                                    $status_color = 'green';
-                                                } else {
-                                                    $status_color = 'red';
-                                                }
                                             ?>
                                                 <tr>
                                                     <td><?= $i; ?></td>

@@ -11,10 +11,12 @@ if (isset($_POST['search'])) {
     try {
         // Search by Invoice ID or Customer Name from tbl_customeramount
         $stmt = $pdo->prepare("
-            SELECT DISTINCT invoice_id, customer_name, productname as search_productname
+            SELECT DISTINCT invoice_id, customer_name,pass_book_no,customer_id, productname as search_productname
             FROM tbl_customeramount 
             WHERE invoice_id LIKE :search 
                OR customer_name LIKE :search
+               OR pass_book_no LIKE :search
+               OR customer_id LIKE :search
             ORDER BY id DESC, invoice_id DESC
             LIMIT 20
         ");

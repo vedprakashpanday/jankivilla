@@ -11,6 +11,11 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
 $js_alert = '';
 if (isset($_POST['btnsubmit'])) {
+    $dob = !empty($_POST['dob']) ? $_POST['dob'] : null;
+
+    $nominee_dob = !empty($_POST['nominee_dob'])
+        ? $_POST['nominee_dob']
+        : null;
     try {
         // Generate ID & Password
         $customer_id = "CUST" . str_pad(rand(0, 99999), 5, "0", STR_PAD_LEFT);
@@ -39,7 +44,7 @@ if (isset($_POST['btnsubmit'])) {
             ':password'                 => $password,
             ':customer_name'            => $_POST['customer_name'],
             ':so_do_wo'                 => $_POST['so_do_wo'],
-            ':dob'                      => $_POST['dob'],
+            ':dob'         => $dob,
             ':mothers_name'             => $_POST['mothers_name'],
             ':occupation'               => $_POST['occupation'],
             ':gender'                   => $_POST['gender'],
@@ -58,7 +63,7 @@ if (isset($_POST['btnsubmit'])) {
             ':district'                 => $_POST['district'],
             ':nominee_name'             => $_POST['nominee_name'],
             ':nominee_so_do_wo'         => $_POST['nominee_so_do_wo'],
-            ':nominee_dob'              => $_POST['nominee_dob'],
+            ':nominee_dob' => $nominee_dob,
             ':nominee_mobile'           => $_POST['nominee_mobile'],
             ':nominee_alternate_mobile' => $_POST['nominee_alternate_mobile'],
             ':nominee_email'            => $_POST['nominee_email'],
@@ -180,7 +185,7 @@ if (isset($_POST['btnsubmit'])) {
 
                                                         <div class="col-md-4">
                                                             <label><b>Pass Book No.</b></label>
-                                                            <input name="pass_book_no" type="text" class="form-control" required>
+                                                            <input name="pass_book_no" type="text" class="form-control" >
                                                         </div>
 
                                                         <div class="col-md-4">

@@ -217,7 +217,7 @@
                            <i class="fal fa-location-dot"></i>
                         </div>
                         <h5 class="mt-15 mb-15">Our Location</h5>
-                        <a href="#">Barheta Road Laheriasarai, Darbhanga, Bihar-846001</a>
+                        <a href="#">1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007</a>
                      </div>
                   </div>
                   <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
@@ -226,8 +226,8 @@
                            <i class="far fa-envelope"></i>
                         </div>
                         <h5 class="mt-15 mb-15">Our Email Address</h5>
-                        <a href="mailto:Harihomes34@gmail.com" title="EmailId - Hari Homes Developers">Harihomes34@gmail.com</a>
-                        <a href="mailto:Harihomes34@gmail.com" title="EmailId - Hari Homes Developers">dharmk6@gmail.com</a>
+                        <a href="mailto:abdeveloperspl@gmail.com" title="EmailId - ">abdeveloperspl@gmail.com</a>
+                        <a href="mailto:abdeveloperspl@gmail.com" title="EmailId - "></a>
                      </div>
                   </div>
                   <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
@@ -236,15 +236,15 @@
                            <i class="fal fa-phone-alt"></i>
                         </div>
                         <h5 class="mt-15 mb-15">Contact Number</h5>
-                        <a href="tel:+917070521500" title="Contact Number - Hari Homes Developers">+917070521500</a>
-                        <a href="tel:001122334456" title="Contact Number - Hari Homes Developers"></a>
+                        <a href="tel:+919472467007" title="">9472467007</a>
+                        <a href="#" title="">9060218/222/333/666</a>
                      </div>
                   </div>
                   <div class="contact-wrapper pt-80">
                      <div class="row gy-50">
                         <div class="col-xxl-6 col-xl-6">
                            <div class="contact-map">
-                              <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14322.331372765317!2d85.8688755!3d26.177712!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x66dbc4b931bed05%3A0xb33846685742e4d!2sHari%20Home%20Developers!5e0!3m2!1sen!2sin!4v1719488614563!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d230841.24871820095!2d85.46972709453127!3d26.080501299999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edbb00255bb6b9%3A0x4e627f0870a25834!2sAmitabh%20Builders%20And%20Developers%20Pvt%20Ltd!5e1!3m2!1sen!2sin!4v1767437947003!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                            </div>
                         </div>
                         <div class="col-xxl-6 col-xl-6">
@@ -303,7 +303,7 @@
 
 
 
-   <a id="whatsappbtn" href="https://wa.me/+917070521500" title="Whatsapp Number" target="_blank" style="display: block;"><img src="image/whatsapp.png" alt="Whatsapp" title="Whatsapp"></a>
+   <a id="whatsappbtn" href="https://wa.me/+919031079721" title="Whatsapp Number" target="_blank" style="display: block;"><img src="image/whatsapp.png" alt="Whatsapp" title="Whatsapp"></a>
 
    <!-- Footer area start -->
    <?php include 'footer.php'; ?>

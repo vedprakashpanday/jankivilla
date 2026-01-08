@@ -8,6 +8,24 @@ if (!$landid) {
     die("No ID provided");
 }
 
+ function jsonToText($json) {
+    $arr = json_decode($json, true);
+    return htmlspecialchars(implode(', ', is_array($arr) ? $arr : []));
+}
+
+function jsonToTextWithLabel($json)
+{
+    $arr = json_decode($json, true);
+
+    if (!is_array($arr)) {
+        return '';
+    }
+
+    return implode(', ', array_map(function ($value) {
+        return '₹' . htmlspecialchars($value) . ' (Per Katha)';
+    }, $arr));
+}
+
 // Fetch land owner data
 $stmt = $pdo->prepare("SELECT * FROM land_owner_payments WHERE id = ?");
 $stmt->execute([$landid]);
@@ -323,18 +341,20 @@ $running_balance = 0;
             <div class="form-row-multi">
                 <div class="form-group">
                     <span class="form-label">Kheshra No.</span>
-                    <span class="form-value"><?php echo htmlspecialchars($data['khesra_no'] ?? ''); ?></span>
+                    <span class="form-value"><?= jsonToText($data['khesra_no']) ?></span>
                 </div>
                 <div class="form-group">
                     <span class="form-label">Rakwa</span>
-                    <span class="form-value"><?php echo htmlspecialchars($data['rakuwa'] ?? ''); ?></span>
+                    <span class="form-value"><?= jsonToText($data['rakuwa']) ?></span>
                 </div>
             </div>
 
             <div class="form-row-multi">
                 <div class="form-group">
                     <span class="form-label">Rate</span>
-                    <span class="form-value">₹<?php echo number_format($data['rate_per_katha'], 2); ?> (Per Katha)</span>
+                    <span class="form-value">
+    <?= jsonToTextWithLabel($data['rate_per_katha']) ?>
+</span>
                 </div>
                 <div class="form-group">
                     <span class="form-label">Total Land Value</span>

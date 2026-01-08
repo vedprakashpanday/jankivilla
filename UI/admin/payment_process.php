@@ -12,6 +12,8 @@ require '../../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+
+
 // Function to send OTP email
 function sendOTP($email, $otp)
 {
@@ -123,6 +125,7 @@ if ($action === 'search') {
     }
 
     try {
+        $duecounter=0;
         $stmt = $pdo->prepare("SELECT * FROM tbl_customeramount WHERE invoice_id = ?");
         $stmt->execute([$invoice_id]);
         $customer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -131,6 +134,8 @@ if ($action === 'search') {
         if ($customer) {
             $customer['net_amount'] = floatval($customer['net_amount']);
             $customer['payamount'] = floatval($customer['payamount']);
+            $customer['admission_charge'] = floatval($customer['admission_charge']);
+            $customer['enrollment_charge'] = floatval($customer['enrollment_charge']);
             $customer['due_amount'] = floatval($customer['due_amount']);
             $customer['corner_charge'] = floatval($customer['corner_charge'] ?? 0);
             $customer['gross_amount'] = floatval($customer['gross_amount'] ?? 0);
@@ -144,6 +149,32 @@ if ($action === 'search') {
                 $payment['net_amount'] = floatval($payment['net_amount']);
                 $payment['payamount'] = floatval($payment['payamount']);
                 $payment['due_amount'] = floatval($payment['due_amount']);
+                $payment['cashback'] = floatval($payment['cashback']);
+
+                // if(!empty($payment['enrollment_charge'] ) ){
+                    
+                //      if($payment['payamount']>0)
+                //     {
+                //         $payment['due_amount'] = floatval($payment['due_amount'])-(15000+floatval($payment['payamount']));
+                //     }
+                //     else
+                //     {
+                //      $duecounter++;
+                //     }
+                // }
+
+                // if($duecounter==1)
+                // {
+                //    if(empty($payment['enrollment_charge'] ) ){
+                
+                //    }
+                // }
+                // else{
+                //     $payment['due_amount'] = floatval($payment['due_amount']);
+                // }
+                
+                $payment['admission_charge'] = floatval($payment['admission_charge']);
+                $payment['enrollment_charge'] = floatval($payment['enrollment_charge']);
             }
             $response['payments'] = $payments;
         } else {
@@ -348,12 +379,20 @@ if ($action === 'check_duplicate') {
     }
 }
 
+
+      
 if ($action === 'submit_payment') {
+
+    $debug = []; 
+    $debug[] = ['stage' => 'START', 'POST' => $_POST];
+
     $employee_id = $_SESSION['sponsor_id'] ?? null;
     $employee_name = $_SESSION['sponsor_name'] ?? null;
 
+    $debug[] = ['stage' => 'SESSION', 'employee_id' => $employee_id, 'employee_name' => $employee_name];
+
     if (!$employee_id || !$employee_name) {
-        echo json_encode(['success' => false, 'error' => 'User session expired. Please log in again.']);
+        echo json_encode(['success' => false, 'error' => 'User session expired', 'debug' => $debug]);
         exit;
     }
 
@@ -364,11 +403,17 @@ if ($action === 'submit_payment') {
         'productname' => trim($_POST['productname'] ?? ''),
         'net_amount' => floatval($_POST['net_amount'] ?? 0),
         'payment_mode' => trim($_POST['payment_mode'] ?? ''),
+        'payment_type' => trim($_POST['payment_type'] ?? ''),
         'payamount' => floatval($_POST['payamount'] ?? 0),
+        'firstallot' => floatval($_POST['firstallot'] ?? 0),
+        'admission' => floatval($_POST['admission'] ?? 0),
+        'enroll' => floatval($_POST['enroll'] ?? 0),
         'due_amount' => floatval($_POST['due_amount'] ?? 0),
         'voucher_number' => trim($_POST['voucher_number'] ?? '') ?: null,
+        'cashback' => floatval($_POST['cashback'] ?? 0),
         'bill_prepared_by_id' => $employee_id,
         'bill_prepared_by_name' => $employee_name,
+        'receipt' => trim($_POST['receipt']),
         'cheque_number' => trim($_POST['cheque_number'] ?? '') ?: null,
         'bank_name' => trim($_POST['bank_name'] ?? '') ?: null,
         'cheque_date' => trim($_POST['cheque_date'] ?? '') ?: null,
@@ -378,9 +423,104 @@ if ($action === 'submit_payment') {
         'created_date' => trim($_POST['payment_date'] ?? '')
     ];
 
+    $debug[] = ['stage' => 'DATA_COLLECTED', 'data' => $data];
+
     if (empty($data['invoice_id']) || empty($data['customer_name']) || empty($data['productname']) || empty($data['payment_mode']) || empty($data['created_date'])) {
-        echo json_encode(['success' => false, 'error' => 'Required fields are missing']);
+        echo json_encode(['success' => false, 'error' => 'Required fields missing', 'debug' => $debug]);
         exit;
+    }
+
+    $allot = 0;
+    $count = 1;
+    $enroll = 0;
+    $flag=0;
+    $debug[] = ['stage' => 'INITIALIZED', 'allot' => $allot, 'count' => $count, 'enroll' => $enroll];
+
+    if ($data['payment_type'] == 'enroll') {
+        $flag++;
+        $count = 6;
+        $enroll = 15000;
+        $admission = 0;
+        $allot = 0;
+        $due = $data['due_amount'] - $allot;
+
+        $debug[] = ['stage' => 'ENROLL_LOGIC', 'count' => $count, 'enroll' => $enroll, 'due' => $due];
+    }
+
+    else if ($data['payment_type'] == 'allot') {
+
+        // $enroll =$data['enroll'];
+        // $admission =$data['admission'];
+        $stmt526 = $pdo->prepare("SELECT flag,admission_charge,enrollment_charge,payamount 
+                                  FROM receiveallpayment 
+                                  WHERE invoice_id = ?");
+        $stmt526->execute([$data['invoice_id']]);
+        $payments = $stmt526->fetchAll(PDO::FETCH_ASSOC);
+
+        $debug[] = ['stage' => 'ALLOT_FETCH', 'payments' => $payments];
+
+        $loop = 0;
+
+        foreach ($payments as $payment) {
+
+            $debug[] = ['stage' => 'ALLOT_LOOP_BEFORE', 'loop' => $loop, 'payment' => $payment];
+
+            if ($payment['flag']==1 && $payment['enrollment_charge']>0 && ($payment['admission_charge']>=0)) {
+                $count=2;
+                $allot=$data['payamount'];
+                $due=$data['due_amount'] -($data['payamount']+$data['cashback']+15000);
+
+                $pdo->prepare("UPDATE receiveallpayment SET flag = 0 WHERE invoice_id = ?")
+                    ->execute([$data['invoice_id']]);
+
+                $debug[] = ['stage'=>'CASE1', 'count'=>$count, 'allot'=>$allot,'due'=>$due,'cashback'=>$data['cashback']];
+            }
+            else if ($payment['flag']==2 && $payment['enrollment_charge']>0 && $payment['admission_charge']>0 && $payment['payamount']>0) { 
+                $count=3;
+                $allot=$data['payamount'];
+                $due=$data['due_amount'] -($data['payamount']+$data['cashback']);
+
+                $pdo->prepare("UPDATE receiveallpayment SET flag = 0 WHERE invoice_id = ?")
+                    ->execute([$data['invoice_id']]);
+
+                $debug[] = ['stage'=>'CASE2','count'=>$count,'allot'=>$allot,'due'=>$due,'cashback'=>$data['cashback']];
+            }
+            else if ($payment['flag']==0 && $payment['admission_charge']>0 && $payment['enrollment_charge']==0 && $payment['payamount']==0&& $data['payamount']>15000) {
+                $count=4;
+                $allot=$data['payamount']-15000;
+                $due=$data['due_amount'] -($data['payamount']+$data['cashback']);
+                if($data['enroll']==0)
+                {
+                    $enroll=15000;
+                }
+                else{
+                $enroll=$payment['enrollment_charge'];
+                }
+                
+                $pdo->prepare("UPDATE receiveallpayment SET flag = 0 WHERE invoice_id = ?")
+                    ->execute([$data['invoice_id']]);
+
+                $debug[] = ['stage'=>'CASE3','count'=>$count,'allot'=>$allot,'due'=>$due];
+            }
+            else {
+                $debug[] = ['stage'=>'CASE_DEFAULT_before','count'=>$count,'allot'=>$allot,'due'=>$data['due_amount'],'cashback'=>$data['cashback']];
+                $count=5;
+                $allot=$data['payamount'];
+                $due=$data['due_amount'] -($data['payamount']+$data['cashback']);
+
+                $debug[] = ['stage'=>'CASE_DEFAULT','count'=>$count,'allot'=>$allot,'due'=>$due,'cashback'=>$data['cashback']];
+            }
+
+            $loop++;
+        }
+
+        $debug[] = ['stage' => 'ALLOT_END', 'count'=> $count, 'allot'=>$allot, 'due'=>$due,'cashback'=>$data['cashback']];
+    }
+
+    else
+    {
+         echo json_encode(['success' => false, 'error' => 'Please Select Payment Type']);
+            exit;
     }
 
 
@@ -408,27 +548,24 @@ if ($action === 'submit_payment') {
         }
     }
 
-    try {
-        $pdo->beginTransaction();
+   try {
 
-        $stmt = $pdo->prepare("
-            INSERT INTO receiveallpayment (
-                invoice_id, member_id, customer_name, productname, net_amount,
-                payment_mode, payamount, due_amount, voucher_number,
-                bill_prepared_by_id, bill_prepared_by_name,
-                cheque_number, bank_name, cheque_date, utr_number,
-                neft_payment, rtgs_payment, created_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
+    $debug[] = ['stage' => 'SQL_TRANSACTION_START'];
+
+    $pdo->beginTransaction();
+
+    /* 1. INSERT INTO receiveallpayment */
+    $debug[] = [
+        'stage' => 'INSERT_RECEIVEALLPAYMENT_PREPARE',
+        'values' => [
             $data['invoice_id'],
             $data['member_id'],
             $data['customer_name'],
             $data['productname'],
             $data['net_amount'],
             $data['payment_mode'],
-            $data['payamount'],
-            $data['due_amount'],
+            $allot,
+            $due,
             $data['voucher_number'],
             $data['bill_prepared_by_id'],
             $data['bill_prepared_by_name'],
@@ -438,32 +575,235 @@ if ($action === 'submit_payment') {
             $data['utr_number'],
             $data['neft_payment'],
             $data['rtgs_payment'],
-            $data['created_date']
-        ]);
+            $data['created_date'],
+            $admission,
+            $enroll
+        ]
+    ];
+
+    $stmt = $pdo->prepare("
+        INSERT INTO receiveallpayment (
+            invoice_id, member_id, customer_name, productname, net_amount,
+            payment_mode, payamount, due_amount, voucher_number,
+            bill_prepared_by_id, bill_prepared_by_name,
+            cheque_number, bank_name, cheque_date, utr_number,
+            neft_payment, rtgs_payment, created_date, admission_charge, enrollment_charge,receipt_no
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+    
+    $stmt->execute([
+        $data['invoice_id'],
+        $data['member_id'],
+        $data['customer_name'],
+        $data['productname'],
+        $data['net_amount'],
+        $data['payment_mode'],
+        $allot,
+        $due,
+        $data['voucher_number'],
+        $data['bill_prepared_by_id'],
+        $data['bill_prepared_by_name'],
+        $data['cheque_number'],
+        $data['bank_name'],
+        $data['cheque_date'],
+        $data['utr_number'],
+        $data['neft_payment'],
+        $data['rtgs_payment'],
+        $data['created_date'],
+        $admission,
+        $enroll,
+        $data['receipt']
+    ]);
+
+    $debug[] = ['stage' => 'INSERT_RECEIVEALLPAYMENT_SUCCESS'];
+
+
+    /* 2. PAYMENT TYPE = ENROLL */
+    if ($data['payment_type'] == 'enroll') {
+
+        $debug[] = [
+            'stage' => 'ENROLL_FLAG_UPDATE',
+            'query' => "UPDATE receiveallpayment SET flag = 1 WHERE invoice_id = ? AND enrollment_charge = 15000",
+            'invoice_id' => $data['invoice_id']
+        ];
+
+        $update = $pdo->prepare("UPDATE receiveallpayment SET flag = 1 WHERE invoice_id = ? AND enrollment_charge = 15000");
+        $update->execute([$data['invoice_id']]);
+
+        $count = 7;
+
+        $debug[] = ['stage' => 'ENROLL_FLAG_UPDATE_SUCCESS', 'count' => $count];
+    }
+
+
+
+    /* 3. UPDATE LOGIC (3 different branches) */
+
+    // CASE 1 — Admission and Enroll both present
+    if (!empty($admission) && !empty($enroll)) {
+
+        $debug[] = [
+            'stage' => 'UPDATE_CUSTOMERAMOUNT_CASE1',
+            'condition' => '!empty(admission) && !empty(enroll)',
+            'values' => [
+                'allot' => $allot,
+                'due_amount' => $data['due_amount'],
+                'admission' => $admission,
+                'enroll' => $enroll,
+                'created_date' => $data['created_date'],
+                'invoice_id' => $data['invoice_id']
+            ]
+        ];
 
         $stmt = $pdo->prepare("
             UPDATE tbl_customeramount 
             SET payamount = payamount + ?, 
                 due_amount = ?,
+                admission_charge = ?,
+                enrollment_charge = ?,
                 created_date = ?
             WHERE invoice_id = ?
         ");
-        $stmt->execute([$data['payamount'], $data['due_amount'], $data['created_date'], $data['invoice_id']]);
+
+        $stmt->execute([
+            $allot,
+            $data['due_amount'],
+            $admission,
+            $enroll,
+            $data['created_date'],
+            $data['invoice_id']
+        ]);
+
+        $pdo->commit();
+        $count = 8;
+
+        $debug[] = ['stage' => 'UPDATE_CASE1_SUCCESS', 'count' => $count];
+    }
+
+    // CASE 2 — Only Enroll present
+    elseif (!empty($enroll) && empty($admission)) {
+
+        $debug[] = [
+            'stage' => 'UPDATE_CUSTOMERAMOUNT_CASE2',
+            'condition' => '!empty(enroll) && empty(admission)',
+            'values' => [
+                'allot' => $allot,
+                'due_amount' => $data['due_amount'],
+                'enroll' => $enroll,
+                'created_date' => $data['created_date'],
+                'invoice_id' => $data['invoice_id']
+            ]
+        ];
+
+        $stmt = $pdo->prepare("
+            UPDATE tbl_customeramount 
+            SET payamount = payamount + ?, 
+                due_amount = ?,                
+                enrollment_charge = ?,
+                created_date = ?
+            WHERE invoice_id = ?
+        ");
+
+        $stmt->execute([
+            $allot,
+            $due,
+            $enroll,
+            $data['created_date'],
+            $data['invoice_id']
+        ]);
 
         $pdo->commit();
 
-        // Send invoice email
-        if (!sendInvoiceEmail($pdo, $data['invoice_id'], $data['customer_name'], $data)) {
-            echo json_encode(['success' => true, 'due_amount' => $data['due_amount'], 'warning' => 'Payment recorded, but failed to send invoice email']);
-        } else {
-            echo json_encode(['success' => true, 'due_amount' => $data['due_amount'], 'message' => 'Payment recorded and invoice emailed to customer']);
-        }
+        $debug[] = ['stage' => 'UPDATE_CASE2_SUCCESS'];
+    }
+
+    // CASE 3 — Default update
+    else {
+
+        $debug[] = [
+            'stage' => 'UPDATE_CUSTOMERAMOUNT_CASE3_DEFAULT',
+            'condition' => 'else (default branch)',
+            'values' => [
+                'allot' => $allot,
+                'due' => $due,
+                'created_date' => $data['created_date'],
+                'invoice_id' => $data['invoice_id']
+            ]
+        ];
+
+        $stmt = $pdo->prepare("
+            UPDATE tbl_customeramount 
+            SET payamount = payamount + ?, 
+                due_amount = ?,               
+                created_date = ?
+            WHERE invoice_id = ?
+        ");
+
+        $stmt->execute([
+            $allot,
+            $due,
+            $data['created_date'],
+            $data['invoice_id']
+        ]);
+
+        $pdo->commit();
+
+        $debug[] = ['stage' => 'UPDATE_CASE3_SUCCESS'];
+    }
+
+
+
+    /* 4. Send invoice email */
+    $debug[] = ['stage' => 'EMAIL_SEND_ATTEMPT_START'];
+
+    if (!sendInvoiceEmail($pdo, $data['invoice_id'], $data['customer_name'], $data, $count, $loop)) {
+
+        $debug[] = ['stage' => 'EMAIL_SEND_FAILED'];
+
+        echo json_encode([
+            'success' => true,
+            'due_amount' => $data['due_amount'],
+            'warning' => 'Payment recorded, but failed to send email',
+            'data' => $data,
+            'count' => $count,
+            'loop' => $loop,
+            'debug' => $debug
+        ]);
         exit;
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+
+    } else {
+
+        $debug[] = ['stage' => 'EMAIL_SEND_SUCCESS'];
+
+        echo json_encode([
+            'success' => true,
+            'due_amount' => $data['due_amount'],
+            'message' => 'Payment recorded and invoice emailed',
+            'data' => $data,
+            'count' => $count,
+            'loop' => $loop,
+            'debug' => $debug
+        ]);
         exit;
     }
+
+
+
+
+} catch (Exception $e) {
+
+    $debug[] = ['stage' => 'EXCEPTION_THROWN', 'message' => $e->getMessage()];
+
+    $pdo->rollBack();
+
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database error: ' . $e->getMessage(),
+        'debug' => $debug
+    ]);
+    exit;
+}
+
 }
 
 if ($action === 'update_status') {

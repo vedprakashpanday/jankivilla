@@ -226,9 +226,9 @@
                         <p>1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007</p>
                         <div class="row">
                            <div class="col-lg-6">
-                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7158.999436689628!2d85.90216055!3d26.21294775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edb7b183260973%3A0x27b1cf9c6e65a9fb!2sKoilaasthan%2C%20Bihar!5e0!3m2!1sen!2sin!4v1716376335928!5m2!1sen!2sin" width="350" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d230841.24871820095!2d85.46972709453127!3d26.080501299999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edbb00255bb6b9%3A0x4e627f0870a25834!2sAmitabh%20Builders%20And%20Developers%20Pvt%20Ltd!5e1!3m2!1sen!2sin!4v1767437947003!5m2!1sen!2sin" width="350" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                            </div>
-                           <div class="col-lg-6">
+                           <div class="col-lg-6">  
                               <div class="icon-content-area">
                                  <div class="inner">
                                     <div class="icon-box-1">

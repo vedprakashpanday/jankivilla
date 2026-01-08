@@ -1,4 +1,9 @@
 ﻿<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);   
+
+
+
 session_start();
 include_once "connectdb.php";
 
@@ -8,191 +13,173 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
     exit();
 }
 
-// Initialize variables
-$member_data = null;
-$bank_data = null;
-$kyc_data = null;  // Added for KYC data
-$search_error = '';
-
-// Handle search request
-if (isset($_POST['search'])) {
-    $member_id = trim($_POST['member_id']);
-    if (!empty($member_id)) {
-        // Fetch from tbl_regist
-        $query_regist = "
-            SELECT 
-                sponsor_id, mem_sid, s_name, gender, date_of_birth, m_email, m_num, 
-                address, city, state_name, date_time
-            FROM tbl_regist
-            WHERE mem_sid = :sponsor_id
-        ";
-        $stmt_regist = $pdo->prepare($query_regist);
-        $stmt_regist->execute(['sponsor_id' => $member_id]);
-        $member_data = $stmt_regist->fetch(PDO::FETCH_ASSOC);
-
-        // Fetch from tbl_bnk
-        $query_bnk = "
-            SELECT 
-                s_name AS bank_holder_name, s_acc, s_bank, b_city, b_ifsc
-            FROM tbl_bnk
-            WHERE sponsor_id = :sponsor_id
-        ";
-        $stmt_bnk = $pdo->prepare($query_bnk);
-        $stmt_bnk->execute(['sponsor_id' => $member_id]);
-        $bank_data = $stmt_bnk->fetch(PDO::FETCH_ASSOC);
-
-        // Fetch from tbl_kyc
-        $query_kyc = "
-            SELECT 
-                address_proof_type, address_proof_file, 
-                pan_card_no, pan_card_file, 
-                bank_acc_no, bank_preview_file
-            FROM tbl_kyc
-            WHERE sponsor_id = :sponsor_id
-        ";
-        $stmt_kyc = $pdo->prepare($query_kyc);
-        $stmt_kyc->execute(['sponsor_id' => $member_id]);
-        $kyc_data = $stmt_kyc->fetch(PDO::FETCH_ASSOC);
-
-        if (!$member_data) {
-            $search_error = "No member found with Member ID: $member_id";
-        }
-    } else {
-        $search_error = "Please enter a Member ID to search.";
-    }
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 // Handle update request
 if (isset($_POST['update'])) {
-    // Existing fields
-    $sponsor_id = $_POST['sponsor_id'];
-    $s_name = $_POST['s_name'];
-    $gender = $_POST['gender'];
-    $date_of_birth = $_POST['date_of_birth'];
-    $m_email = $_POST['m_email'];
-    $m_num = $_POST['m_num'];
-    $address = $_POST['address'];
-    $city = $_POST['city'];
-    $state_name = $_POST['state_name'];
-    $bank_holder_name = $_POST['bank_holder_name'];
-    $s_acc = $_POST['s_acc'];
-    $s_bank = $_POST['s_bank'];
-    $b_city = $_POST['b_city'];
-    $b_ifsc = $_POST['b_ifsc'];
-    $pan_option = $_POST['pan_option'];
-    $pan_number = $_POST['pan_number'];
+// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // echo "<pre>";
+    // var_dump($_POST);    
+    // echo "</pre>";
+    // exit();
 
-    // KYC fields
-    $address_proof_type = $_POST['address_proof_type'];
-    $pan_card_no = $_POST['pan_card_no'];
-    $bank_acc_no = $_POST['bank_acc_no'];
+    // --- SAFE INPUT FETCH (NO warnings, no undefined index) ---
+     $member_id        = $_POST['member_id']        ?? '';   
+    $m_name            = $_POST['member_name']      ?? '';
+    $sponsor_id        = $_POST['sponsor_id']        ?? '';   
+    $s_name            = $_POST['sponsor_name']      ?? '';
+     $doj            = $_POST['doj']      ?? ''; 
+    $spouse            = $_POST['spouse']          ?? '';
+    $parents           = $_POST['parents']         ?? '';
+    $gender            = $_POST['gender']            ?? '';
+    $date_of_birth     = $_POST['dob']     ?? '';
+    $m_email           = $_POST['email']           ?? '';
+    $m_num             = $_POST['mobile']             ?? '';
+    $address           = $_POST['address']           ?? '';
+    $city              = $_POST['city']              ?? '';
+    //$state_name        = $_POST['state_name']        ?? '';
+    $aadhar            = $_POST['aadhar']            ?? '';
+    $pan        = $_POST['pan']        ?? '';
+    $designation       = $_POST['designation']       ?? '';
+    $address_proof_type= $_POST['proofType']?? '';
+    $martial        = $_POST['marital']        ?? '';
+    // $anniversary       = $_POST['anniversary'] ?? null;
 
-    // Update tbl_regist
-    $update_regist = "
-        UPDATE tbl_regist
-        SET 
-            s_name = :s_name,
-            gender = :gender,
-            date_of_birth = :date_of_birth,
-            m_email = :m_email,
-            m_num = :m_num,
-            address = :address,
-            city = :city,
-            state_name = :state_name,
-            pan_number = :pan_number
-        WHERE mem_sid = :sponsor_id
-    ";
+    $anniversary = !empty($_POST['anniversary'])
+        ? $_POST['anniversary']
+        : null;
+    $alternate      = $_POST['alternate']        ?? '';
+    $native       = $_POST['native']        ?? '';
+    $pin       = $_POST['pincode']        ?? '';
+    $password       = $_POST['password']        ?? '';
+    $nationality       = $_POST['nationality']        ?? '';
+  
+    
+
+
+    // --- UPDATE QUERY WITH JSON APPEND ---
+  $update_regist = "
+    UPDATE tbl_regist
+    SET 
+
+    mem_sid = :m_id,
+    m_name = :m_name,
+    sponsor_id = :s_id,
+    s_name = :s_name,
+    date_time = :doj,
+    so_do_name = :so_do_name,
+    parents_name = :parents_name,
+    gender = :gender,
+    designation = :designation1,
+    date_of_birth = :dob,
+    date_of_anniversary = :anniversary_date,
+    m_num = :contact_no,
+    m_email = :email,
+    m_password = :password,
+    
+    address = :communication_address,
+    city = :city,
+    aadhar_number = :aadhar_no,
+    pan_number = :pan_no,   
+    alt_no = :alternate_no,
+    native_place = :native_place,
+    pincode = :pin_code,
+    marital_status = :marital_status,
+    nationality = :nationality,    
+    proof_type=:proof_type,
+
+    
+
+        designations = JSON_ARRAY_APPEND(
+            COALESCE(designations, JSON_ARRAY()),
+            '$',
+            JSON_OBJECT(
+                'designation', :designation123,
+                'date', :designation_date
+            )
+        )
+
+    WHERE mem_sid = :member_id
+";
+
     $stmt_regist = $pdo->prepare($update_regist);
-    $stmt_regist->execute([
-        'sponsor_id' => $sponsor_id,
-        's_name' => $s_name,
-        'gender' => $gender,
-        'date_of_birth' => $date_of_birth,
-        'm_email' => $m_email,
-        'm_num' => $m_num,
-        'address' => $address,
-        'city' => $city,
-        'state_name' => $state_name,
-        'pan_number' => $pan_option === 'Yes' ? $pan_number : ''
-    ]);
 
-    // Update or Insert into tbl_bnk
-    $check_bnk = $pdo->prepare("SELECT COUNT(*) FROM tbl_bnk WHERE sponsor_id = :sponsor_id");
-    $check_bnk->execute(['sponsor_id' => $sponsor_id]);
-    $bank_exists = $check_bnk->fetchColumn();
+   $params = [
+    'm_id'           => $member_id,
+    'm_name'          => $m_name,
+    's_id'           => $sponsor_id,
+    's_name'          => $s_name,
+    'doj'             => $doj,
+    'so_do_name'     => $spouse,
+    'parents_name'   => $parents,    
+    'gender'          => $gender,
+    'designation1'    => $designation,
+    'dob'             => $date_of_birth,
+    'anniversary_date'=> $anniversary??null,
+    'contact_no'      => $m_num,
+    'email'           => $m_email,
+    'password'        => $password,
+    // 'create_time'     => date('Y-m-d H:i:s'),
+    'communication_address' => $address,
+    'city'            => $city,
+    'aadhar_no'       => $aadhar,
+    'pan_no'          => $pan,
+    'member_id'       => $member_id,
+    'alternate_no'    => $alternate,
+    'native_place'    => $native,
+    'pin_code'        => $pin,
+    'marital_status'  => $martial,
+    'nationality'       => $nationality,
+    'proof_type'      => $address_proof_type,
+    'designation123'   => $designation,
+    'designation_date' => date('Y-m-d')
+];
 
-    if ($bank_exists) {
-        $update_bnk = "
-            UPDATE tbl_bnk
-            SET 
-                s_name = :bank_holder_name,
-                s_acc = :s_acc,
-                s_bank = :s_bank,
-                b_city = :b_city,
-                b_ifsc = :b_ifsc
-            WHERE sponsor_id = :sponsor_id
-        ";
-        $stmt_bnk = $pdo->prepare($update_bnk);
-        $stmt_bnk->execute([
-            'sponsor_id' => $sponsor_id,
-            'bank_holder_name' => $bank_holder_name,
-            's_acc' => $s_acc,
-            's_bank' => $s_bank,
-            'b_city' => $b_city,
-            'b_ifsc' => $b_ifsc
-        ]);
-    } else {
-        $insert_bnk = "
-            INSERT INTO tbl_bnk (sponsor_id, s_name, s_acc, s_bank, b_city, b_ifsc)
-            VALUES (:sponsor_id, :bank_holder_name, :s_acc, :s_bank, :b_city, :b_ifsc)
-        ";
-        $stmt_bnk = $pdo->prepare($insert_bnk);
-        $stmt_bnk->execute([
-            'sponsor_id' => $sponsor_id,
-            'bank_holder_name' => $bank_holder_name,
-            's_acc' => $s_acc,
-            's_bank' => $s_bank,
-            'b_city' => $b_city,
-            'b_ifsc' => $b_ifsc
-        ]);
+try {
+    $stmt_regist = $pdo->prepare($update_regist);
+    $stmt_regist->execute($params);
+
+     echo "<script>alert('Profile Updated Successfully!');</script>";
+    header("Location: Editprofile.php");
+     exit;
+
+} catch (PDOException $e) {
+
+    echo "<pre>";
+    echo "SQL ERROR: " . $e->getMessage() . "\n\n";
+    print_r($stmt_regist->errorInfo());
+    echo "</pre>";
+    exit;
+}
+
+
+  
+
+//     echo "<script>alert('Member data including KYC updated successfully!');</script>";
+//    header("Location: Editprofile.php");
+// exit();
+}
+
+if(isset($_POST['delete']) && $_POST['del_id'] != '') {
+    $del_id = $_POST['del_id'] ?? '';
+
+    $delete_stmt = $pdo->prepare("DELETE FROM tbl_regist WHERE mem_sid = :member_id");
+    $delete_stmt->bindParam(':member_id', $del_id);
+
+    try {
+        $delete_stmt->execute();
+        echo "<script>alert('Record deleted successfully!');</script>";
+        header("Location: Editprofile.php");
+        exit;
+    } catch (PDOException $e) {
+        echo "<pre>";
+        echo "SQL ERROR: " . $e->getMessage() . "\n\n";
+        print_r($delete_stmt->errorInfo());
+        echo "</pre>";
+        exit;
     }
-
-    // Update or Insert into tbl_kyc
-    $check_kyc = $pdo->prepare("SELECT COUNT(*) FROM tbl_kyc WHERE sponsor_id = :sponsor_id");
-    $check_kyc->execute(['sponsor_id' => $sponsor_id]);
-    $kyc_exists = $check_kyc->fetchColumn();
-
-    if ($kyc_exists) {
-        $update_kyc = "
-            UPDATE tbl_kyc
-            SET 
-                address_proof_type = :address_proof_type,
-                pan_card_no = :pan_card_no,
-                bank_acc_no = :bank_acc_no
-            WHERE sponsor_id = :sponsor_id
-        ";
-        $stmt_kyc = $pdo->prepare($update_kyc);
-        $stmt_kyc->execute([
-            'sponsor_id' => $sponsor_id,
-            'address_proof_type' => $address_proof_type,
-            'pan_card_no' => $pan_card_no,
-            'bank_acc_no' => $bank_acc_no
-        ]);
-    } else {
-        $insert_kyc = "
-            INSERT INTO tbl_kyc (sponsor_id, address_proof_type, pan_card_no, bank_acc_no)
-            VALUES (:sponsor_id, :address_proof_type, :pan_card_no, :bank_acc_no)
-        ";
-        $stmt_kyc = $pdo->prepare($insert_kyc);
-        $stmt_kyc->execute([
-            'sponsor_id' => $sponsor_id,
-            'address_proof_type' => $address_proof_type,
-            'pan_card_no' => $pan_card_no,
-            'bank_acc_no' => $bank_acc_no
-        ]);
-    }
-
-    echo "<script>alert('Member data including KYC updated successfully!');</script>";
 }
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -219,6 +206,8 @@ if (isset($_POST['update'])) {
     <link href="assets/css/vendor.bundle.base.css" rel="stylesheet">
     <link href="../assets/css/vendor.bundle.base.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/themify-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
 
     <script>
@@ -285,210 +274,84 @@ if (isset($_POST['update'])) {
                                             <div id="">
 
                                                 <hr>
-                                                <div class="box-contant" style="padding: 10px 0px;">
-                                                    <form method="POST" action="">
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <b>Member ID</b>
-                                                                <input name="member_id" type="text" id="member_id" class="form-control" value="<?php echo isset($_POST['member_id']) ? htmlspecialchars($_POST['member_id']) : ''; ?>">
-                                                                <span id="member_id_error" style="color:#FF3300; font-weight:bold; display:<?php echo $search_error ? 'block' : 'none'; ?>;">
-                                                                    <?php echo $search_error; ?>
-                                                                </span>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <br>
-                                                                <input type="submit" name="search" value="Search" id="search_btn" class="btn btn-success">
-                                                            </div>
-                                                            <div class="col-md-4"></div>
-                                                        </div>
-                                                    </form>
+                                                <div class="box-contant" style="padding: 10px 0px;overflow-x:auto;">
+                                                   <table id="staffTable" class="display table table-bordered table-striped" style="width:100%;">
+<thead>
+<tr>
+    <th>Member ID</th>
+    <th>Member Name</th>
+    <th>Sponsor ID</th>
+    <th>Sponsor Name</th>
+    <th>Date Of Joining</th>
+    <th>Spouse</th>
+    <th>Parents Name</th>
+    <th>Designation</th>
+    <th>Gender</th>
+    <th>Marital Status</th>
+    <th>Nationality</th>
+    <th>DOB</th>
+    <th>Date of Anniversary</th>
+    <th>Mobile</th>
+    <th>Alternate</th>
+    <th>Email</th>
+     <th>PAN</th>
+    <th>Aadhar</th>
+    <th>Native Place</th>
+    <th>Address</th>
+    <th>City</th>
+    <th>Pincode</th>
+    <th>Password</th>
+    <th>Proof Type</th>
+    <th>Action</th>
+</tr>
+</thead>
 
-                                                    <!-- Display/Update Form -->
-                                                    <?php if ($member_data): ?>
-                                                        <form method="POST" action="">
-                                                            <input type="hidden" name="sponsor_id" value="<?php echo htmlspecialchars($member_data['sponsor_id']); ?>">
-                                                            <div class="row mt-4">
-                                                                <div class="col-md-4">
-                                                                    <b>Sponsor ID<span style="color: red">*</span></b>
-                                                                    <span id="display_member_id" class="form-control" style="font-weight:bold;" data-original-value="<?php echo htmlspecialchars($member_data['sponsor_id']); ?>">
-                                                                        <?php echo htmlspecialchars($member_data['sponsor_id']); ?>
-                                                                    </span>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Sponsor Name<span style="color: red">*</span></b>
-                                                                    <input name="s_name_display" type="text" id="s_name" class="form-control" value="<?php echo htmlspecialchars($member_data['s_name']); ?>" readonly>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Joining Date<span style="color: red">*</span></b>
-                                                                    <span id="joining_date" class="form-control" data-original-value="<?php echo htmlspecialchars($member_data['date_time']); ?>">
-                                                                        <?php echo htmlspecialchars($member_data['date_time']); ?>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+<tbody>
+    <?php 
+        $stmt = $pdo->prepare("SELECT * FROM tbl_regist");
+    $stmt->execute();
+    $sponsor = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-4">
-                                                                    <b>Gender<span style="color: red">*</span></b>
-                                                                    <table class="form-control">
-                                                                        <tr>
-                                                                            <td>
-                                                                                <input id="gender_male" type="radio" name="gender" value="Male" <?php echo ($member_data['gender'] === 'Male') ? 'checked' : ''; ?>>
-                                                                                <label for="gender_male">Male</label>
-                                                                            </td>
-                                                                            <td>
-                                                                                <input id="gender_female" type="radio" name="gender" value="Female" <?php echo ($member_data['gender'] === 'Female') ? 'checked' : ''; ?>>
-                                                                                <label for="gender_female">Female</label>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </div>
-                                                            </div>
+    foreach($sponsor as $row):
+    ?>
+<tr>
+    <td><?= $row['mem_sid'] ?></td>
+    <td><?= $row['m_name'] ?></td>
+    <td><?= $row['sponsor_id'] ?></td>
+    <td><?= $row['s_name'] ?></td>
+    <td><?= $row['date_time'] ?></td>
+    <td><?= $row['so_do_name'] ?></td>
+    <td><?= $row['parents_name'] ?></td>
+    <td><?= $row['designation'] ?></td>
+    <td><?= $row['gender'] ?></td>
+    <td><?= $row['marital_status'] ?></td>
+    <td><?= $row['nationality'] ?></td>
+    <td><?= $row['date_of_birth'] ?></td>
+    <td><?= $row['date_of_anniverary']??null ?></td>
+    <td><?= $row['m_num'] ?></td>
+    <td><?= $row['alt_no'] ?></td>
+    <td><?= $row['m_email'] ?></td>
+    <td><?= $row['pan_number'] ?></td>
+    <td><?= $row['aadhar_number'] ?></td>
+    <td><?= $row['native_place'] ?></td>
+    <td><?= $row['address'] ?></td>
+    <td><?= $row['city'] ?></td>
+    <td><?= $row['pincode'] ?></td>
+    <td><?= $row['m_password'] ?></td>
+    <td><?= $row['proof_type'] ?></td>
+    <td class="d-flex">
+        
+        <input type="submit" class="btn btn-sm btn-primary editBtn" name="edit" value="Edit" />
 
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-12">&nbsp;</div>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <b>Address<span style="color: red">*</span></b>
-                                                                    <textarea name="address" rows="2" cols="20" id="address" class="form-control"><?php echo htmlspecialchars($member_data['address']); ?></textarea>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>City<span style="color: red">*</span></b>
-                                                                    <input name="city" type="text" id="city" class="form-control" value="<?php echo htmlspecialchars($member_data['city']); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>State<span style="color: red">*</span></b>
-                                                                    <input name="state_name" type="text" id="state_name" class="form-control" value="<?php echo htmlspecialchars($member_data['state_name']); ?>">
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-12">&nbsp;</div>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <b>Email</b>
-                                                                    <input name="m_email" type="text" id="m_email" class="form-control" value="<?php echo htmlspecialchars($member_data['m_email']); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Mobile<span style="color: red">*</span></b>
-                                                                    <input name="m_num" type="text" id="m_num" class="form-control" value="<?php echo htmlspecialchars($member_data['m_num']); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Date of Birth<span style="color: red">*</span></b>
-                                                                    <input name="date_of_birth" type="text" id="date_of_birth" class="form-control" value="<?php echo htmlspecialchars($member_data['date_of_birth']); ?>">
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-12">&nbsp;</div>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <b>Account Holder Name<span style="color: red">*</span></b>
-                                                                    <input name="bank_holder_name" type="text" id="bank_holder_name" class="form-control" value="<?php echo htmlspecialchars($bank_data['bank_holder_name'] ?? ''); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Bank A/c No<span style="color: red">*</span></b>
-                                                                    <input name="s_acc" type="text" id="s_acc" class="form-control" value="<?php echo htmlspecialchars($bank_data['s_acc'] ?? ''); ?>">
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-12">&nbsp;</div>
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <b>Bank Name<span style="color: red">*</span></b>
-                                                                    <input name="s_bank" type="text" id="s_bank" class="form-control" value="<?php echo htmlspecialchars($bank_data['s_bank'] ?? ''); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Branch<span style="color: red">*</span></b>
-                                                                    <input name="b_city" type="text" id="b_city" class="form-control" value="<?php echo htmlspecialchars($bank_data['b_city'] ?? ''); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Bank IFSC Code<span style="color: red">*</span></b>
-                                                                    <input name="b_ifsc" type="text" id="b_ifsc" class="form-control" value="<?php echo htmlspecialchars($bank_data['b_ifsc'] ?? ''); ?>">
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-12">&nbsp;</div>
-                                                            </div>
-
-                                                            <!-- KYC Fields -->
-                                                            <div class="row mt-4">
-                                                                <h4>KYC Details</h4>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-4">
-                                                                    <b>Address Proof Type<span style="color: red">*</span></b>
-                                                                    <select name="address_proof_type" class="form-control" required>
-                                                                        <option value="">----Select----</option>
-                                                                        <option value="Aadhar Card" <?php echo ($kyc_data['address_proof_type'] ?? '') === 'Aadhar Card' ? 'selected' : ''; ?>>Aadhar Card</option>
-                                                                        <option value="Voter Id" <?php echo ($kyc_data['address_proof_type'] ?? '') === 'Voter Id' ? 'selected' : ''; ?>>Voter Id</option>
-                                                                        <option value="Driving License" <?php echo ($kyc_data['address_proof_type'] ?? '') === 'Driving License' ? 'selected' : ''; ?>>Driving License</option>
-                                                                        <option value="Passport" <?php echo ($kyc_data['address_proof_type'] ?? '') === 'Passport' ? 'selected' : ''; ?>>Passport</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Address Proof Document</b>
-                                                                    <?php if (!empty($kyc_data['address_proof_file'])): ?>
-                                                                        <a href="../admin/member_document/<?php echo htmlspecialchars($kyc_data['address_proof_file']); ?>"
-                                                                            target="_blank">View Document</a>
-                                                                    <?php else: ?>
-                                                                        <span>No document uploaded</span>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-4">
-                                                                    <b>PAN Card Number<span style="color: red">*</span></b>
-                                                                    <input name="pan_card_no" type="text" class="form-control"
-                                                                        value="<?php echo htmlspecialchars($kyc_data['pan_card_no'] ?? ''); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>PAN Card Document</b>
-                                                                    <?php if (!empty($kyc_data['pan_card_file'])): ?>
-                                                                        <a href="../admin/member_document/<?php echo htmlspecialchars($kyc_data['pan_card_file']); ?>"
-                                                                            target="_blank">View Document</a>
-                                                                    <?php else: ?>
-                                                                        <span>No document uploaded</span>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-2">
-                                                                <div class="col-md-4">
-                                                                    <b>Bank Account Number<span style="color: red">*</span></b>
-                                                                    <input name="bank_acc_no" type="text" class="form-control"
-                                                                        value="<?php echo htmlspecialchars($kyc_data['bank_acc_no'] ?? ''); ?>">
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <b>Bank Document</b>
-                                                                    <?php if (!empty($kyc_data['bank_preview_file'])): ?>
-                                                                        <a href="../admin/member_document/<?php echo htmlspecialchars($kyc_data['bank_preview_file']); ?>"
-                                                                            target="_blank">View Document</a>
-                                                                    <?php else: ?>
-                                                                        <span>No document uploaded</span>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="row mt-4">
-                                                                <div class="col-md-12">
-                                                                    <input type="submit" name="update" value="Update" id="update_btn" class="btn btn-success">
-                                                                </div>
-                                                            </div>
-                                                        </form>
-                                                    <?php endif; ?>
+        <form  method="post" >
+        <input type="hidden" name="del_id" value="<?= $row['mem_sid'] ?>" />
+        <input type="submit" class="btn btn-sm btn-danger" name="delete" value="Delete" />
+        </form>
+    </td>
+</tr>
+    <?php endforeach; ?>
+</tbody>
+</table>
                                                 </div>
 
                                             </div>
@@ -496,6 +359,182 @@ if (isset($_POST['update'])) {
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ================= EDIT MODAL ================= -->
+
+<div class="modal fade" id="editModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+    
+<div class="modal-header">
+    <h5 class="modal-title">Edit Staff</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<form id="editForm"  method="post">
+<div class="row g-2">
+
+<div class="col-md-6">
+    <label>Member ID</label>
+    <input type="text" id="staff_id" name="member_id" class="form-control" readonly>
+</div>
+
+<div class="col-md-6">
+    <label>Member Name</label>
+    <input type="text" id="staff_name" name="member_name" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Sponser ID</label>
+    <input type="text" id="sponsor_id" name="sponsor_id" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Sponser Name</label>
+    <input type="text" id="sponsor_name" name="sponsor_name" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Date Of Joining</label>
+    <input type="text" id="doj" name="doj" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Spouse</label>
+    <input type="text" id="spouse" name="spouse" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Parents Name</label>
+    <input type="text" id="parents" name="parents" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Designation</label>
+    <input class="form-control" list="datalistOptions" id="designation" placeholder="Search/Enter Designation" name="designation" value="">
+                                                            <datalist id="datalistOptions">
+                                                            <option value="Sales Executive (S.E.)">
+                                                            <option value="Senior Sales Executive (S.S.E.)">
+                                                                <option value="Assistant Marketing Officer (A.M.O.)">
+                                                                    <option value="Marketing Officer (M.O.)">
+                                                                        <option value="Assistant Marketing Manager (A.M.M.)">
+                                                                            <option value="Marketing Manager (M.M.)">
+                                                                                <option value="Chief Marketing Manager (C.M.M.)">
+                                                                                    <option value="Assistant General Manager (A.G.M.)">
+                                                                                        <option value="Deputy General Manager (D.G.M.)">
+                                                                                            <option value="General Manager (G.M.)">
+                                                                                                <option value="Marketing Director (M.D.)">
+                                                                                                    <option value="Founder Member (F.M.)">
+                                                                                                        
+                                                            </datalist>
+</div>
+
+<div class="col-md-6">
+    <label>Gender</label>
+    <input type="text" id="gender" name="gender" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Marital Status</label>
+    <input type="text" id="marital" name="marital" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Nationality</label>
+    <input type="text" id="nationality" name="nationality" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>DOB</label>
+    <input type="date" id="dob" name="dob" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Anniversary</label>
+    <input type="date" id="anniversary" name="anniversary" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Mobile</label>
+    <input type="text" id="mobile" name="mobile" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Alternate</label>
+    <input type="text" id="alternate" name="alternate" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Email</label>
+    <input type="text" id="email" name="email" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>PAN</label>
+    <input type="text" id="pan" name="pan" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Aadhar</label>
+    <input type="text" id="aadhar" name="aadhar" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Native Place</label>
+    <input type="text" id="native" name="native" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Address</label>
+    <input type="text" id="address" name="address" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>City</label>
+    <input type="text" id="city" name="city" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Pincode</label>
+    <input type="text" id="pincode" name="pincode" class="form-control">
+</div>
+
+<div class="col-md-6">
+    <label>Password</label>
+    <input type="text" id="password" name="password" class="form-control">
+</div>
+
+<div class="col-md-6">
+    
+                                                            <label><b>Select Proof Type</b></label>
+                                                            <select class="form-control" id="proofType" name="proofType">
+                                                                <option value="">-- Select Proof --</option>
+                                                                <option value="aadhar">Aadhar Card</option>
+                                                                <option value="pan">PAN Card</option>
+                                                                <option value="passport">Passport</option>
+                                                                <option value="passbook">Bank Passbook</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <!-- <div class="mb-3 d-none" id="proofUploadBox">
+                                                            <label class="form-label" id="proofLabel"></label>
+                                                            <input name="address_proof_file[]" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" id="proofFile" multiple>
+                                                            <small class="text-muted" id="proofHint"></small>
+                                                        </div> -->
+
+</div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button class="btn btn-success" type="submit" name="update">Update</button>
+</div>
+</form>
+</div>
+</div>
+</div>
 
                             <?php include 'adminfooter.php'; ?>
                         </div>
@@ -538,6 +577,9 @@ if (isset($_POST['update'])) {
                 <script src="../resources/js/calendar.js"></script>
                 <script src="../resources/js/tabs.js"></script>
 
+                <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
                 <!-- endinject -->
                 <!-- Custom js for this page-->
                 <script src="../resources/js/dashboard.js"></script>
@@ -559,43 +601,158 @@ if (isset($_POST['update'])) {
                 <script src="../resources/js/data-table.js"></script>
 
                 <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Prevent interaction with display fields
-                        const sponsorId = document.getElementById('display_member_id');
-                        const sponsorName = document.getElementById('s_name');
-                        const joiningDate = document.getElementById('joining_date');
+document.getElementById('proofType').addEventListener('change', function () {
 
-                        // Disable interactions for sponsor_id and joining_date spans
-                        [sponsorId, joiningDate].forEach(element => {
-                            element.style.pointerEvents = 'none'; // Disable clicks, edits
-                            element.style.userSelect = 'none'; // Prevent text selection
-                        });
+    const uploadBox = document.getElementById('proofUploadBox');
+    const label = document.getElementById('proofLabel');
+    const hint = document.getElementById('proofHint');
+    const fileInput = document.getElementById('proofFile');
 
-                        // Ensure sponsor_name input is readonly and prevent copy-paste
-                        sponsorName.setAttribute('readonly', 'readonly');
-                        sponsorName.addEventListener('paste', (e) => e.preventDefault());
-                        sponsorName.addEventListener('keydown', (e) => {
-                            e.preventDefault(); // Prevent any key input
-                        });
+    fileInput.value = ''; // reset file
 
-                        // Form submission validation for displayed values
-                        const form = document.querySelector('form');
-                        form.addEventListener('submit', function(e) {
-                            // Get original values from data attributes
-                            const originalSponsorId = sponsorId.getAttribute('data-original-value');
-                            const originalJoiningDate = joiningDate.getAttribute('data-original-value');
-                            const originalSponsorName = sponsorName.value;
+    if (!this.value) {
+        uploadBox.classList.add('d-none');
+        return;
+    }
 
-                            // Compare with current displayed values
-                            if (sponsorId.textContent.trim() !== originalSponsorId ||
-                                joiningDate.textContent.trim() !== originalJoiningDate ||
-                                sponsorName.value !== originalSponsorName) {
-                                e.preventDefault();
-                                alert('Error: Form data has been tampered with. Please reload the page and try again.');
-                            }
-                        });
-                    });
-                </script>
+    uploadBox.classList.remove('d-none');
+
+    switch (this.value) {
+        case 'aadhar':
+            label.innerText = 'Upload Aadhar Card';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'pan':
+            label.innerText = 'Upload PAN Card';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'passport':
+            label.innerText = 'Upload Passport';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'passbook':
+            label.innerText = 'Upload Bank Passbook';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+    }
+});
+</script>
+
+                <!-- ================= JS ================= -->
+
+<script>
+$(document).ready(function(){
+
+    $('#staffTable').DataTable();
+
+    // EDIT BUTTON
+    $('#staffTable').on('click','.editBtn',function(){
+
+        let row = $(this).closest('tr').children('td');
+
+        $('#staff_id').val(row.eq(0).text());
+        $('#staff_name').val(row.eq(1).text());
+         $('#sponsor_id').val(row.eq(2).text());
+        $('#sponsor_name').val(row.eq(3).text());
+         $('#doj').val(row.eq(4).text());       
+        $('#spouse').val(row.eq(5).text());
+        $('#parents').val(row.eq(6).text());
+        $('#designation').val(row.eq(7).text());
+        $('#gender').val(row.eq(8).text());
+        $('#marital').val(row.eq(9).text());
+        $('#nationality').val(row.eq(10).text());
+        $('#dob').val(row.eq(11).text());
+       
+// check value
+if ($('#marital').val() === 'Married') {
+    $('#anniversary').prop('disabled', false).closest('.col-md-6').show();
+} else {
+    $('#anniversary').prop('disabled', true).val('').closest('.col-md-6').hide();
+}
+
+// set anniversary only if married
+if ($('#marital').val() === 'Married') {
+    $('#anniversary').val(row.eq(12).text().trim());
+}
+        $('#mobile').val(row.eq(13).text());
+        $('#alternate').val(row.eq(14).text());
+        $('#email').val(row.eq(15).text());
+        $('#pan').val(row.eq(16).text());
+        $('#aadhar').val(row.eq(17).text());
+        $('#native').val(row.eq(18).text());
+        $('#address').val(row.eq(19).text());
+        $('#city').val(row.eq(20).text());
+        $('#pincode').val(row.eq(21).text());
+        $('#password').val(row.eq(22).text());
+        $('#proof').val(row.eq(23).text());
+
+        $('#editModal').modal('show');
+    });
+
+    // DELETE BUTTON
+    $('#staffTable').on('click','.deleteBtn',function(){
+        if(confirm('Are you sure you want to delete this record?')){
+            $('#staffTable').DataTable().row($(this).parents('tr')).remove().draw();
+        }
+    });
+
+});
+</script>
+
+            <script>
+$(document).ready(function(){
+
+   // let ajaxTimer = null;
+
+    $('#sponsor_id').on('input', function(){
+
+        let searchVal = $(this).val().trim();
+
+         // clear name while typing
+        $('#sponsor_name').val('');
+
+        if(searchVal === ''){
+            return;
+        }
+
+
+        // debounce (fast typing issue)
+        // clearTimeout(ajaxTimer);
+        // ajaxTimer = setTimeout(function(){
+
+            $.ajax({
+                url: 'search_sponsor.php',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    search: searchVal   // 👈 key "search"
+                },
+                success: function(response){
+                   
+                    
+                    if(response.mem_sid == searchVal){
+                        // first matched record
+                        
+                        $('#sponsor_name').val(response.m_name);
+                    }else{
+                        $('#sponsor_name').val("No matching sponsor found");
+                    }
+                },
+                error: function(){
+                    $('#sponsor_name').val('Error fetching data');
+                }
+            });
+
+       // }, 300); // delay for better UX
+    });
+
+});
+</script>
+    
+
 
             </div>
 

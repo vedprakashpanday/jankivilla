@@ -264,8 +264,12 @@
   </div> -->
 
   <!-- PDF Map -->
-  <div class="responsive" style="text-align:center;">
+  <!-- <div class="responsive" style="text-align:center;">
     <img src="image/phase1.jpg" alt="Phase 1 Map"
+      style="max-width:100%; height:auto; border:0; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+  </div> -->
+  <div class="responsive" style="text-align:center;">
+    <img src="image/phase2.jpeg" alt="Phase 2 Map"
       style="max-width:100%; height:auto; border:0; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
   </div>
 

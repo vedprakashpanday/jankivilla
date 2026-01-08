@@ -1,10 +1,25 @@
-<?php
+  <?php
+ error_reporting(E_ALL);
+ini_set('display_errors', 1);;
+ob_start(); // Start output buffering to capture any unintended output
 include_once 'connectdb.php'; // Assuming this file contains your PDO connection
 
 // Get parameters from URL
 $invoice_id = isset($_GET['invoice_id']) ? $_GET['invoice_id'] : '';
 $member_id = isset($_GET['member_id']) ? $_GET['member_id'] : '';
 $row_id = isset($_GET['row_id']) ? $_GET['row_id'] : '';
+$admission = isset($_GET['admission']) ? $_GET['admission'] : '';
+$enroll = isset($_GET['enroll']) ? $_GET['enroll'] : '';
+$amount = isset($_GET['pay']) ? $_GET['pay'] : '';
+
+if($admission>0 && $enroll=='null'&& $amount=='null')
+{
+    $payAmount = $admission;
+}
+if($enroll!='null'&& $amount!='null')
+{
+    $payAmount = $enroll + $amount;
+}
 
 try {
     // Fetch data from receiveallpayment and tbl_customeramount
@@ -16,7 +31,7 @@ try {
             tc.productname AS tc_productname,
             tc.net_amount AS tc_net_amount,
             tc.payamount AS tc_payamount,
-            tc.due_amount AS tc_due_amount
+            tc.due_amount AS tc_due_amount            
         FROM 
             receiveallpayment rap
         LEFT JOIN 
@@ -42,11 +57,22 @@ try {
         $customerAddress = $row['address'] ?? '';
         $invoiceDate = $row['created_date']; // Payment date
         $invoiceNo = $row['invoice_id'];
-        $receiptno = 'JV' . $row['id'];
+        if(!empty($row['adm_receipt']))
+        {
+        $receiptno = $row['adm_receipt'];
+         
+        }
+
+         if(!empty($row['receipt_no']))
+        {
+        $receiptno = $row['receipt_no'];
+        
+        }
+        
         $productName = $row['productname'] ?? $row['tc_productname'];
 
         $totalAmount = $row['tc_net_amount'] ?? $row['net_amount']; // Total from tbl_customeramount
-        $payAmount = $row['payamount']; // This specific payment
+        
         // $duesAmount = $row['due_amount']; // Remaining due after this payment
         $paymentMode = $row['payment_mode'];
 
@@ -165,7 +191,7 @@ function numberToWords($number)
 
 
 $totalSql = "
-    SELECT SUM(payamount) AS total_paid
+    SELECT SUM(payamount) AS total_paid,SUM(enrollment_charge) AS enroll
     FROM receiveallpayment
     WHERE invoice_id = :invoice_id AND member_id = :member_id
 ";
@@ -175,7 +201,7 @@ $totalStmt->execute([
     ':member_id' => $member_id
 ]);
 $totalRow = $totalStmt->fetch(PDO::FETCH_ASSOC);
-$totalPaidAmount = $totalRow['total_paid'] ?? 0;
+$totalPaidAmount = $totalRow['total_paid']+$totalRow['enroll'] ?? 0;
 $duesAmount = $totalAmount - $totalPaidAmount;
 
 ?>
@@ -328,8 +354,8 @@ $duesAmount = $totalAmount - $totalPaidAmount;
                     <tr>
                         <td>Receipt No:</td>
                         <td><b><?php echo htmlspecialchars($receiptno); ?></b></td>
-                        <td>Voucher No:</td>
-                        <td><b><?php echo htmlspecialchars($voucher_number); ?></b></td>
+                        <!-- <td>Voucher No:</td>
+                        <td><b><?php echo htmlspecialchars($voucher_number); ?></b></td> -->
                     </tr>
                 </table>
 
@@ -450,8 +476,8 @@ $duesAmount = $totalAmount - $totalPaidAmount;
                     <tr>
                         <td>Receipt No:</td>
                         <td><b><?php echo htmlspecialchars($receiptno); ?></b></td>
-                        <td>Voucher No:</td>
-                        <td><b><?php echo htmlspecialchars($voucher_number); ?></b></td>
+                        <!-- <td>Voucher No:</td>
+                        <td><b><?php echo htmlspecialchars($voucher_number); ?></b></td> -->
                     </tr>
                 </table>
 

@@ -302,53 +302,48 @@ foreach ($level6_members as $member) {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php
+                                            <?php
 
-                                        $i = 0;
-                                        foreach ($level6_members as $member) {
+                                          $designation = 'Marketing Manager (M.M.)';
 
-                                            $commission_stmt = $pdo->prepare("
-        SELECT SUM(scommission) AS searning, SUM(commission) AS cearning, SUM(w_balance) AS wearing
-        FROM (
-            SELECT scommission, 0 AS commission, 0 AS w_balance
-            FROM tbl_sinc
-            WHERE sponsor_id = :sponsor_id
-            UNION ALL
-            SELECT 0 AS scommission, commission, 0 AS w_balance
-            FROM tbl_slinc
-            WHERE sponsor_id = :sponsor_id
-           
-        ) AS earnings
-    ");
-                                            $commission_stmt->bindParam(':sponsor_id', $member['mem_sid']);
-                                            $commission_stmt->bindParam(':member_id', $member['mem_sid']);
-                                            $commission_stmt->execute();
-                                            $commission_data = $commission_stmt->fetch(PDO::FETCH_ASSOC);
+$level1_stmt = $pdo->prepare("
+    SELECT 
+        mem_sid,
+        m_name,
+        sponsor_id,
+        s_name,
+        date_time,
+        designations
+    FROM tbl_regist
+    WHERE designation=:designation 
+");
 
-                                            // Get total commission for the member
-                                            $total = $commission_data['searning'] + $commission_data['cearning'];
+$level1_stmt->bindParam(':designation', $designation, PDO::PARAM_STR);
+$level1_stmt->execute();
 
-                                            $i++;
+$level1_members1 = $level1_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// echo '<pre>';
+// print_r($level1_members1);
+// echo '</pre>';
+// exit;
+$i=0;
+                                            foreach ($level1_members1 as $member) {
+                                                $i++;
+                                            ?>
+                                                <tr>
+                                                    <td><?= $i; ?></td>
+                                                    <td><?= $member['mem_sid']; ?></td>
+                                                    <td><?= $member['m_name']; ?></td>
+                                                    <td><?= $member['sponsor_id']; ?></td>
+                                                    <td><?= $member['s_name']; ?></td>
+                                                    <td><?= $member['date_time']; ?></td>
+                                                </tr>
 
-                                            $status = $member['status'];
-                                            if ($status == 'active') {
-                                                $status_color = 'green';
-                                            } else {
-                                                $status_color = 'red';
+                                        </tbody>
+                                    <?php
                                             }
-                                        ?>
-                                            <tr>
-                                                <td><?= $i; ?></td>
-                                                <td><?= $member['mem_sid']; ?></td>
-                                                <td><?= $member['m_name']; ?></td>
-                                                <td><?= $member['sponsor_id']; ?></td>
-                                                <td><?= $member['s_name']; ?></td>
-                                                <td><?= $member['date_time']; ?></td>
-                                            </tr>
-                                        <?php
-                                        } ?>
-                                    </tbody>
+                                    ?>
                                 </table>
 
                             </div>

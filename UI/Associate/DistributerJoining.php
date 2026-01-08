@@ -451,8 +451,36 @@ if (isset($_POST['btnsubmit'])) {
                                                         $stmt = $pdo->prepare("SELECT designation FROM tbl_regist WHERE mem_sid = ?");
                                                         $stmt->execute([$memberid]);
                                                         $sponsor_member = $stmt->fetch(PDO::FETCH_ASSOC);
+
                                                         if (!$sponsor_member) {
-                                                            die("Sponsor member not found.");
+                                                        // $stmt = $pdo->prepare("SELECT sponsor_id FROM tbl_hire WHERE sponsor_id = ?");
+                                                        // $stmt->execute(["JV000001"]);
+                                                        // $sponsor_admin = $stmt->fetch(PDO::FETCH_ASSOC);
+                                                        // // var_dump($sponsor_admin);
+                                                        // // die();
+                                                        // if ($sponsor_admin) {
+                                                        //    echo '<select name="" id="">
+                                                        //     <option value="Sales Executive (S.E.)">Sales Executive (S.E.)</option>
+                                                        //     <option value="Senior Sales Executive (S.S.E.)">Senior Sales Executive (S.S.E.)</option>
+                                                        //     <option value="Assistant Marketing Officer (A.M.O.)">Assistant Marketing Officer (A.M.O.)</option>
+                                                        //     <option value="Marketing Officer (M.O.)">Marketing Officer (M.O.)</option>
+                                                        //     <option value="Assistant Marketing Manager (A.M.M.)">Assistant Marketing Manager (A.M.M.)</option>
+                                                        //     <option value="Marketing Manager (M.M.)">Marketing Manager (M.M.)</option>
+                                                        //     <option value="Chief Marketing Manager (C.M.M.)">Chief Marketing Manager (C.M.M.)</option>
+                                                        //     <option value="Assistant General Manager (A.G.M.)">Assistant General Manager (A.G.M.)</option>
+                                                        //     <option value="Deputy General Manager (D.G.M.)">Deputy General Manager (D.G.M.)</option>
+                                                        //     <option value="General Manager (G.M.)">General Manager (G.M.)</option>
+                                                        //     <option value="Marketing Director (M.D.)">Marketing Director (M.D.)</option>
+                                                        //     <option value="Founder Member (F.M.)">Founder Member (F.M.)</option>
+                                                        //     </select>';
+                                                             
+                                                        // }
+                                                        // else{
+
+                                                        //     die("Sponsor member not found.");
+                                                        // }
+
+                                                        die("Sponsor member not found.");
                                                         }
                                                         $sponsor_designation = trim($sponsor_member['designation']);
 
@@ -495,12 +523,17 @@ if (isset($_POST['btnsubmit'])) {
                                                             <select name="designation" class="form-control" required>
                                                                 <option value="">-- Select Designation --</option>
                                                                 <?php for ($lvl = 1; $lvl < $sponsor_level; $lvl++):
-                                                                    $desig = $all_designations[$lvl] ?? '';
+                                                                
+                                                                    $desig = $all_designations[$lvl-1] ?? '';
                                                                     $selected = ($edit_mode && $edit_data['designation'] == $desig) ? 'selected' : '';
                                                                 ?>
+                                                               <?php if($lvl-1 !=0): ?>
                                                                     <option value="<?= htmlspecialchars($desig) ?>" <?= $selected ?>><?= htmlspecialchars($desig) ?></option>
+                                                                    <?php endif; ?>
                                                                 <?php endfor; ?>
+
                                                             </select>
+                                                             
                                                             <?php if ($sponsor_level <= 1): ?>
                                                                 <small class="text-muted">No lower designations available for your level.</small>
                                                             <?php endif; ?>
@@ -740,6 +773,8 @@ if (isset($_POST['btnsubmit'])) {
                                 },
                                 dataType: 'json',
                                 success: function(response) {
+                                console.log(response);
+                                
                                     if (response.name) {
                                         $('#sponsor_name').val(response.name);
                                     } else if (response.error) {

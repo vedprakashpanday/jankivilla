@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['btnsubmit'])) {
     $stmt->execute([$sponsor_id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $s_name = $row ? $row['s_name'] : '';
-
+ 
     date_default_timezone_set('Asia/Kolkata');
     $created_at = date('Y-m-d H:i:s');
 

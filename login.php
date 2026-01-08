@@ -363,7 +363,7 @@ if (isset($_POST['btn_login'])) {
                                                         <a href="#">Login</a>
                                                         <ul class="submenu">
                                                             <li><a href="login.php">Associate</a></li>
-
+                                                            <li><a href="employee.php">Employee</a></li>
                                                             <li><a href="Customer_Login.php">Customer</a></li>
                                                         </ul>
                                                     </li>

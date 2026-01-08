@@ -1,4 +1,6 @@
 ﻿<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 include_once "connectdb.php";
 
@@ -23,8 +25,12 @@ if (isset($_POST['btnsubmit'])) {
     $gender         = $_POST['gender'] ?? '';
     $marital_status = $_POST['marital_status'] ?? '';
     $nationality    = trim($_POST['nationality']);
-    $dob            = $_POST['Dob'];
-    $date_of_anniversary = $_POST['date_of_anniversary'] ?? null;
+    $dob = !empty($_POST['Dob']) ? $_POST['Dob'] : null;
+    $proofType     = $_POST['proofType'];
+
+    $date_of_anniversary = !empty($_POST['date_of_anniversary'])
+        ? $_POST['date_of_anniversary']
+        : null;
     $mem_mob        = trim($_POST['mem_mob']);
     $alt_no         = trim($_POST['alt_no']);
     $mem_email      = trim($_POST['mem_email']);
@@ -36,7 +42,20 @@ if (isset($_POST['btnsubmit'])) {
     $pincode        = trim($_POST['pincode']);
     $mem_pass       = $_POST['mem_pass'];
     $datetime       = date('Y-m-d H:i:s');
+    $date = date('Y-m-d');
 
+    $newEntry = [
+        'designation' => $designation,
+        'date' => $date
+    ];
+
+
+
+    $designations[] = $newEntry;
+
+
+    // 4. JSON encode + UPDATE database
+    $newJson = json_encode($designations, JSON_UNESCAPED_UNICODE);
     // File Upload
     $upload_dir = 'member_document/';
     $allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
@@ -66,11 +85,11 @@ if (isset($_POST['btnsubmit'])) {
     // Insert into tbl_regist
     $sql = "INSERT INTO tbl_regist 
             (sponsor_id, s_name, m_name, parents_name, so_do_name, gender, designation, 
-             date_of_birth, date_of_anniversary m_num, m_email, m_password, date_time, address, city, 
+             date_of_birth, date_of_anniversary,m_num, m_email, m_password, date_time, address, city, 
              aadhar_number, pan_number, mem_sid, alt_no, native_place, pincode, 
-             marital_status, nationality)
+             marital_status, nationality,designations,proof_type)
             VALUES 
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -82,6 +101,7 @@ if (isset($_POST['btnsubmit'])) {
         $gender,
         $designation,
         $dob,
+        $date_of_anniversary,
         $mem_mob,
         $mem_email,
         $mem_pass,
@@ -95,7 +115,9 @@ if (isset($_POST['btnsubmit'])) {
         $native_place,
         $pincode,
         $marital_status,
-        $nationality
+        $nationality,
+        $newJson,
+        $proofType
     ]);
 
     // Insert into tbl_hire
@@ -129,7 +151,22 @@ if (isset($_GET['get_designations'])) {
     $sponsor = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$sponsor) {
-        echo json_encode(['options' => '<option value="">-- Select Designation --</option><option disabled>Sponsor not found</option>']);
+        echo json_encode(['options' => '<option value="">-- Select Designation --</option>
+                                            <option value="Sales Executive (S.E.)">Sales Executive (S.E.)</option>
+                                            <option value="Senior Sales Executive (S.S.E.)">Senior Sales Executive (S.S.E.)</option>
+                                            <option value="Assistant Marketing Officer (A.M.O.)">Assistant Marketing Officer (A.M.O.)</option>
+                                            <option value="Marketing Officer (M.O.)">Marketing Officer (M.O.)</option>
+                                            <option value="Assistant Marketing Manager (A.M.M.)">Assistant Marketing Manager (A.M.M.)</option>
+                                            <option value="Marketing Manager (M.M.)">Marketing Manager (M.M.)</option>
+                                            <option value="Chief Marketing Manager (C.M.M.)">Chief Marketing Manager (C.M.M.)</option>
+                                            <option value="Assistant General Manager (A.G.M.)">Assistant General Manager (A.G.M.)</option>
+                                            <option value="Deputy General Manager (D.G.M.)">Deputy General Manager (D.G.M.)</option>
+                                            <option value="General Manager (G.M.)">General Manager (G.M.)</option>
+                                            <option value="Marketing Director (M.D.)">Marketing Director (M.D.)</option>
+                                            <option value="Founder Member (F.M.)">Founder Member (F.M.)</option>
+                                            
+                                            
+                                            ']);
         exit;
     }
 
@@ -161,7 +198,7 @@ if (isset($_GET['get_designations'])) {
 
     // Build allowed options (equal or lower than sponsor)
     $options = '<option value="">-- Select Designation --</option>';
-    for ($level = 1; $level <= $sponsor_level; $level++) {
+    for ($level = 1; $level < $sponsor_level; $level++) {
         $name = $all_designations[$level];
         $options .= "<option value=\"$name\">$name</option>";
     }
@@ -340,8 +377,8 @@ if (isset($_GET['get_designations'])) {
                                                         </div>
                                                         <div class="col-md-4">
                                                             <b>Marital Status</b><br>
-                                                            <label><input type="radio" name="marital_status" value="Married"> Married</label>&nbsp;&nbsp;
-                                                            <label><input type="radio" name="marital_status" value="Unmarried"> Unmarried</label>
+                                                            <label><input type="radio" name="marital_status" id="married" value="Married"> Married</label>&nbsp;&nbsp;
+                                                            <label><input type="radio" name="marital_status" id="unmarried" value="Unmarried"> Unmarried</label>
                                                         </div>
 
                                                         <!-- Row 3 -->
@@ -354,9 +391,9 @@ if (isset($_GET['get_designations'])) {
                                                             <input name="Dob" type="date" class="form-control">
                                                         </div>
 
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-4" id="DOA">
                                                             <b>Date of Anniversary</b>
-                                                            <input name="date_of_anniversary" type="date" class="form-control">
+                                                            <input name="date_of_anniversary" type="date" class="form-control" >
                                                         </div>
 
                                                         <div class="col-md-4">
@@ -414,10 +451,24 @@ if (isset($_GET['get_designations'])) {
                                                         </div>
 
                                                         <!-- File Upload -->
-                                                        <div class="col-md-4">
-                                                            <b>Upload Aadhar / Proof</b>
-                                                            <input name="address_proof_file[]" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" multiple>
+                                                       <div class="col-md-4">
+    
+                                                            <label><b>Select Proof Type</b></label>
+                                                            <select class="form-control" id="proofType" name="proofType">
+                                                                <option value="">-- Select Proof --</option>
+                                                                <option value="aadhar">Aadhar Card</option>
+                                                                <option value="pan">PAN Card</option>
+                                                                <option value="passport">Passport</option>
+                                                                <option value="passbook">Bank Passbook</option>
+                                                            </select>
                                                         </div>
+
+                                                        <div class="mb-3 d-none" id="proofUploadBox">
+                                                            <label class="form-label" id="proofLabel"></label>
+                                                            <input name="address_proof_file[]" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" id="proofFile" multiple>
+                                                            <small class="text-muted" id="proofHint"></small>
+                                                        </div>
+
 
                                                         <!-- Hidden DateTime -->
                                                         <div style="display:none">
@@ -527,10 +578,62 @@ if (isset($_GET['get_designations'])) {
                             });
                         }
                     });
+
+                    
                 });
+
+               
             </script>
 
+<script>
+document.getElementById('proofType').addEventListener('change', function () {
 
+    const uploadBox = document.getElementById('proofUploadBox');
+    const label = document.getElementById('proofLabel');
+    const hint = document.getElementById('proofHint');
+    const fileInput = document.getElementById('proofFile');
+
+    fileInput.value = ''; // reset file
+
+    if (!this.value) {
+        uploadBox.classList.add('d-none');
+        return;
+    }
+
+    uploadBox.classList.remove('d-none');
+
+    switch (this.value) {
+        case 'aadhar':
+            label.innerText = 'Upload Aadhar Card';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'pan':
+            label.innerText = 'Upload PAN Card';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'passport':
+            label.innerText = 'Upload Passport';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+
+        case 'passbook':
+            label.innerText = 'Upload Bank Passbook';
+            hint.innerText = 'Accepted: JPG, PNG, PDF (Max 2MB)';
+            break;
+    }
+});
+</script>
+<script>
+ $(document).on('click', '#unmarried', function() {
+                        $('#DOA').css('display', 'none');
+                    });
+
+                    $(document).on('click', '#married', function() {
+                        $('#DOA').css('display', 'block');
+                    });
+</script>
             <script>
                 // Auto-load on page load
                 document.addEventListener('DOMContentLoaded', function() {
@@ -577,6 +680,7 @@ if (isset($_GET['get_designations'])) {
             visibility: hidden;
         }
     </style>
+
 
 
 </body>

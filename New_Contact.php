@@ -310,21 +310,15 @@ if (isset($_POST['btnsubmit'])) {
                            <i class="fal fa-phone-alt"></i>
                         </div>
                         <h5 class="mt-15 mb-15">Contact Number</h5>
-                        <a href="tel:+919031079721" title="Contact Number - Amitabh Builders & Developerss">+91-9031079721</a>
+                        <a href="tel:+919472467007" title="">9472467007</a>
+                        <a href="#" title="">9060218/222/333/666</a>
                      </div>
                   </div>
                   <div class="contact-wrapper pt-80">
                      <div class="row gy-50">
                         <div class="col-xxl-6 col-xl-6">
                            <div class="contact-map">
-                              <iframe
-                                 src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14322.331372765317!2d85.8688755!3d26.177712!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x66dbc4b931bed05%3A0xb33846685742e4d!2sHari%20Home%20Developers!5e0!3m2!1sen!2sin!4v1719488614563!5m2!1sen!2sin"
-                                 width="600"
-                                 height="450"
-                                 style="border: 0"
-                                 allowfullscreen=""
-                                 loading="lazy"
-                                 referrerpolicy="no-referrer-when-downgrade"></iframe>
+                              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d230841.24871820095!2d85.46972709453127!3d26.080501299999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edbb00255bb6b9%3A0x4e627f0870a25834!2sAmitabh%20Builders%20And%20Developers%20Pvt%20Ltd!5e1!3m2!1sen!2sin!4v1767437947003!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                            </div>
                         </div>
                         <div class="col-xxl-6 col-xl-6">

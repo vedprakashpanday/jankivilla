@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 session_start();
 include_once "connectdb.php";
 
@@ -53,6 +56,13 @@ if (isset($_POST['btnsubmit'])) {
     $cash_received_date = $_POST['cash_received_date'];
     $created_at = date('Y-m-d H:i:s');
     $id = isset($_POST['id']) ? $_POST['id'] : null;
+    $remark = isset($_POST['remark']) ? $_POST['remark'] : '';
+    $cheque_no = isset($_POST['cheque_no']) ? $_POST['cheque_no'] : null;
+    $bank_name = isset($_POST['bank_name']) ? $_POST['bank_name'] : null;
+    $payment_mode = isset($_POST['payment_mode']) ? $_POST['payment_mode'] : 'cash';
+   $cheque_date = (!empty($_POST['cheque_date']))
+    ? $_POST['cheque_date']
+    : null;
 
     if (empty($plot_no) || empty($customer_name) || empty($amount) || empty($cash_received_date)) {
         echo "<script>alert('All fields are required.');</script>";
@@ -61,11 +71,11 @@ if (isset($_POST['btnsubmit'])) {
 
     if ($id) {
         // Update existing record
-        $update = $pdo->prepare("UPDATE tbl_cash_details SET plot_no = :plot_no, customer_name = :customer_name, receiver_name = :receiver_name, amount = :amount, cash_received_date = :cash_received_date WHERE id = :id");
+        $update = $pdo->prepare("UPDATE tbl_cash_details SET plot_no = :plot_no, customer_name = :customer_name, receiver_name = :receiver_name, amount = :amount, cash_received_date = :cash_received_date, remark = :remark, cheque_number = :cheque_no, bank_name = :bank_name, payment_mode = :payment_mode, cheque_date = :cheque_date WHERE id = :id");
         $update->bindParam(':id', $id);
     } else {
         // Insert new record
-        $update = $pdo->prepare("INSERT INTO tbl_cash_details (plot_no, customer_name, receiver_name, amount, cash_received_date, created_at) VALUES (:plot_no, :customer_name, :receiver_name, :amount, :cash_received_date, :created_at)");
+        $update = $pdo->prepare("INSERT INTO tbl_cash_details (plot_no, customer_name, receiver_name, amount, cash_received_date, remark, cheque_number, bank_name, payment_mode, cheque_date, created_at) VALUES (:plot_no, :customer_name, :receiver_name, :amount, :cash_received_date, :remark, :cheque_no, :bank_name, :payment_mode, :cheque_date, :created_at)");
         $update->bindParam(':created_at', $created_at);
     }
 
@@ -74,6 +84,11 @@ if (isset($_POST['btnsubmit'])) {
     $update->bindParam(':receiver_name', $receiver_name);
     $update->bindParam(':amount', $amount);
     $update->bindParam(':cash_received_date', $cash_received_date);
+    $update->bindParam(':remark', $remark);
+    $update->bindParam(':cheque_no', $cheque_no);
+    $update->bindParam(':bank_name', $bank_name);
+    $update->bindParam(':payment_mode', $payment_mode);
+    $update->bindParam(':cheque_date', $cheque_date);
     $update->execute();
 
     echo "<script>alert('Cash details " . ($id ? "updated" : "added") . " successfully!'); window.location.href = 'cashreceived.php';</script>";
@@ -221,10 +236,41 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
                                                             <div class="col-md-4">
                                                                 <b>Amount:<span style="color: red">*</span></b>
                                                                 <input name="amount" id="amount" type="number" step="0.01" class="form-control" style="font-weight:bold;" required>
-                                                            </div>
+                                                            </div>   
+
+                                                            <div class="col-md-3 mb-3">
+                                                                                <label class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
+                                                                                <select class="form-control" name="payment_mode" id="paymentMode" required>
+                                                                                    <option value="">Select Mode</option>
+                                                                                    <option value="cash">Cash</option>
+                                                                                    <option value="cheque">Cheque</option>
+                                                                                </select>
+                                                                            </div>
+
+                                                                            
+                                                                            <div class="col-md-3 mb-3" id="bankNameField" style="display:none;">
+                                                                                <label class="form-label fw-semibold">Bank Name <span class="text-danger">*</span></label>
+                                                                                <input type="text" class="form-control" name="bank_name" id="bank_name" placeholder="Enter bank name">
+                                                                            </div>
+
+                                                                            <div class="col-md-3 mb-3" id="chequeNumberField" style="display:none;">
+                                                                                <label class="form-label fw-semibold">Cheque Number <span class="text-danger">*</span></label>
+                                                                                <input type="text" class="form-control" name="cheque_no" id="cheque_no" placeholder="Enter Cheque number">
+                                                                            </div>
+
+                                                                            <div class="col-md-3 mb-3" id="chequeDateField" style="display:none;">
+                                                                                <label class="form-label fw-semibold">Cheque Date <span class="text-danger">*</span></label>
+                                                                                <input type="date" class="form-control" name="cheque_date" id="cheque_date" placeholder="Enter Cheque Date">
+                                                                            </div>
+
                                                             <div class="col-md-4">
                                                                 <b>Cash Received Date:<span style="color: red">*</span></b>
                                                                 <input name="cash_received_date" id="cash_received_date" type="date" class="form-control" style="font-weight:bold;" required>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <b>Remark:</b>
+                                                                <textarea name="remark" id="remark" class="form-control" ></textarea>
                                                             </div>
                                                         </div>
                                                         <div class="row pt-4">
@@ -244,7 +290,8 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
                                     <div class="row pt-5">
                                         <div class="col-md-12" style="background: #fff; padding: 20px; border: 2px solid #fff; box-shadow: 1px 3px 12px 4px #988f8f;">
                                             <h3>Cash Details Report</h3>
-                                            <table class="table table-bordered table-striped">
+                                            <div style="overflow: auto;">
+                                            <table class="table table-bordered table-striped" >
                                                 <thead>
                                                     <tr>
                                                         <th>#</th>
@@ -252,14 +299,19 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
                                                         <th>Customer Name</th>
                                                         <th>Receiver Name</th>
                                                         <th>Amount</th>
+                                                        <th>Cheque Number</th>
+                                                        <th>Bank Name</th>
+                                                        <th>Payment Mode</th>
+                                                        <th>Cheque Date</th>
                                                         <th>Cash Received Date</th>
                                                         <th>Created At</th>
+                                                         <th>Remark</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <?php
-                                                    $stmt = $pdo->query("SELECT id, plot_no, customer_name, amount, cash_received_date, created_at 
+                                                    $stmt = $pdo->query("SELECT * 
                                                     FROM tbl_cash_details 
                                                     ORDER BY created_at DESC");
                                                     $sn = 1;
@@ -270,8 +322,13 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
                                                         echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
                                                         echo "<td>" . htmlspecialchars($row['receiver_name']) . "</td>";
                                                         echo "<td>" . htmlspecialchars($row['amount']) . "</td>";
-                                                        echo "<td>" . htmlspecialchars($row['cash_received_date']) . "</td>";
+                                                        echo "<td>" . $row['cheque_number'] . "</td>";
+                                                        echo "<td>" . $row['bank_name'] . "</td>";
+                                                        echo "<td>" . $row['payment_mode'] . "</td>";
+                                                        echo "<td>" . $row['cheque_date'] . "</td>";
+                                                        echo "<td>" . htmlspecialchars($row['cash_received_date']) . "</td>";                                                        
                                                         echo "<td>" . htmlspecialchars($row['created_at']) . "</td>";
+                                                        echo "<td>" . htmlspecialchars($row['remark']) . "</td>";
                                                         echo "<td>
                                             <button class='btn btn-sm btn-primary' onclick='editCashDetail(" . json_encode($row) . ")'>Edit</button>
                                             <form method='post' style='display:inline;'>
@@ -285,6 +342,7 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
                                                     ?>
                                                 </tbody>
                                             </table>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
@@ -395,13 +453,52 @@ if (isset($_POST['verify_otp']) && isset($_POST['delete_id']) && isset($_POST['o
         }
     </style>
 
+
+   <script>
+        // Show/hide bank name field based on payment mode
+        document.getElementById('paymentMode').addEventListener('change', function() {
+            const bankField = document.getElementById('bankNameField');
+            const chequeNumberField = document.getElementById('chequeNumberField');
+            const chequeDateField = document.getElementById('chequeDateField');
+            if (this.value === 'cheque') {
+                bankField.style.display = 'block';
+                chequeNumberField.style.display = 'block';
+                chequeDateField.style.display = 'block';
+                bankField.querySelector('input').required = true;
+                 chequeNumberField.querySelector('input').required = true;
+                chequeDateField.querySelector('input').required = true;
+            } else {
+                bankField.style.display = 'none';
+                chequeNumberField.style.display = 'none';
+                chequeDateField.style.display = 'none';
+                bankField.querySelector('input').required = false;
+                chequeNumberField.querySelector('input').required = false;
+                chequeDateField.querySelector('input').required = false;
+            }
+        });
+    </script>
+
+
     <script>
         function editCashDetail(data) {
+
+            if(data.payment_mode === 'cheque') {
+                document.getElementById('paymentMode').value = 'cheque';
+                document.getElementById('paymentMode').dispatchEvent(new Event('change'));
+            } else {
+                document.getElementById('paymentMode').value = 'cash';
+                document.getElementById('paymentMode').dispatchEvent(new Event('change'));
+            }
             document.getElementById('formTitle').innerText = 'Edit Cash Details';
             document.getElementById('id').value = data.id;
             document.getElementById('plot_no').value = data.plot_no;
             document.getElementById('customer_name').value = data.customer_name;
+            document.getElementById('receiver_name').value = data.receiver_name;
+            document.getElementById('remark').value = data.remark;
             document.getElementById('amount').value = data.amount;
+            document.getElementById('cheque_no').value = data.cheque_number;
+            document.getElementById('bank_name').value = data.bank_name;
+            document.getElementById('cheque_date').value = data.cheque_date;
             document.getElementById('cash_received_date').value = data.cash_received_date;
             document.getElementById('cashForm').scrollIntoView({
                 behavior: 'smooth'

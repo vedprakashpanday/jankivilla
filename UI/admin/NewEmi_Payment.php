@@ -273,6 +273,18 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                         <th>Net Amount</th>
                                                         <td id="netAmount"></td>
                                                     </tr>
+                                                     <tr>
+                                                        <th>CashBack</th>
+                                                        <td id="cashback"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Admission Paid Amount</th>
+                                                        <td id="admission"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Enrollment Paid Amount</th>
+                                                        <td id="enroll"></td>
+                                                    </tr>
                                                     <tr>
                                                         <th>Previous Paid Amount</th>
                                                         <td id="prevPaid"></td>
@@ -281,16 +293,22 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                         <th>Current Due Amount</th>
                                                         <td id="dueAmount"></td>
                                                     </tr>
-                                                    <tr class="payment-row">
-                                                        <th>Enter Payment Amount</th>
+                                                     <tr class="payment-row">
+                                                        <th>Enter Receipt Number</th>
                                                         <td>
-                                                            <input type="number" id="newPayment" class="form-control" style="width: 200px;">
+                                                            <input type="text" id="receipt" class="form-control" style="width: 200px;" placeholder="Receipt Number">
                                                         </td>
                                                     </tr>
                                                     <tr class="payment-row">
+                                                        <th>Enter Payment Amount</th>
+                                                        <td>
+                                                            <input type="number" id="newPayment" class="form-control" style="width: 200px;" placeholder="Enter Payment Amount">
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="payment-row d-none">
                                                         <th>Enter Voucher Number</th>
                                                         <td>
-                                                            <input type="text" id="voucherNumber" class="form-control" style="width: 200px;">
+                                                            <input type="text" id="voucherNumber" class="form-control" style="width: 200px;" placeholder="Enter Voucher">
                                                         </td>
                                                     </tr>
                                                     <tr class="payment-row">
@@ -300,6 +318,21 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
                                                         </td>
                                                     </tr>
+                                                    <tr class="payment-row">
+                                                        <th>Payment Type</th>
+                                                        <td class='d-flex'>
+                                                            <select class="form-control col-3" name="payment_type" id="payment_type"  style="width: 200px;">
+                                                                <option value="">Select Payment Type</option>
+                                                                <option value="enroll" id="enrolld">Enrollment charge</option>
+                                                                <option value="allot">Allotment</option>
+                                                                <!-- <option value="bank_transfer">Bank Transfer</option> -->
+                                                            </select>
+                                                        
+                                                   
+                      
+                                                        </td>
+                                                    </tr>
+
                                                     <tr class="payment-row">
                                                         <th>Payment Mode</th>
                                                         <td>
@@ -311,6 +344,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                             </select>
                                                         </td>
                                                     </tr>
+
                                                     <tr id="chequeDetails" class="payment-details" style="display: none;">
                                                         <th>Cheque Details</th>
                                                         <td>
@@ -325,6 +359,49 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                             <input type="text" id="neft_payment" class="form-control bank-transfer-field" placeholder="NEFT Reference Number" style="width: 200px; margin-bottom: 5px;">
                                                             <input type="text" id="rtgs_payment" class="form-control bank-transfer-field" placeholder="RTGS Reference Number" style="width: 200px; margin-bottom: 5px;">
                                                             <input type="text" id="utr_number" class="form-control bank-transfer-field" placeholder="UTR Number" style="width: 200px;">
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="Emiblock" class='d-none'>
+                                                        <th>Select EMI</th>
+                                                        <td>
+                                                                     <div class="form-group col-md-4" id="emidiv">
+                          <!-- <label>EMI Months:</label> -->
+                          <select class="form-control" name="emi_month" id="emi_month" onchange="calculateEMI()" >
+                            <option value="">Select EMI Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="12">12 Months</option>
+                            <option value="18">18 Months</option>
+                            <option value="24">24 Months</option>
+                            <option value="36">36 Months</option>
+                            <option value="54">54 Months</option>
+                          </select>
+                        </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="emi_report" class='d-none'>
+                                                        <th>Your Emi</th>
+                                                        <td >
+                                                            
+                                                              <div class="col-md-5">
+                          <!-- EMI Calculation Report -->
+                          <div  class="emi-report" >
+                            <label>EMI Calculation Report:</label>
+                            <div id="emi_calculation" >
+                              <p>EMI Amount per Month: <span id="emi_amount">0.00</span></p>
+                              <p>Due Amount: <span id="emi_due_amount">0.00</span></p>
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="emi_schedule"></tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -342,12 +419,16 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                         <thead>
                                                             <tr>
                                                                 <th>Sr No.</th>
+                                                                <th>Receipt number </th>
                                                                 <th>Invoice ID</th>
                                                                 <th>Customer Name</th>
                                                                 <th>Plot Name</th>
                                                                 <th>Net Amount</th>
                                                                 <th>Payment Mode</th>
                                                                 <th>Amount Paid</th>
+                                                                <th>Admission Amount</th>
+                                                                <th>Enrollment Amount</th>
+                                                                <th>CashBack Amount</th>
                                                                 <th>Payment Date</th>
                                                                 <th>Due Amount</th>
                                                                 <th>Cheque Number</th>
@@ -361,6 +442,37 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                             </tr>
                                                         </thead>
                                                         <tbody id="paymentHistoryBody">
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <div style="overflow-x: scroll; height:30vh;width:95%!important;">
+                                                    <table id="admissionpaymentHistory">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sr No.</th>
+                                                                <th>Receipt number </th>
+                                                                <th>Invoice ID</th>
+                                                                <th>Customer Name</th>
+                                                                <th>Plot Name</th>
+                                                                <th>Net Amount</th>
+                                                                <th>Payment Mode</th>
+                                                                <th>Amount Paid</th>
+                                                                <th>Admission Amount</th>
+                                                                <th>Enrollment Amount</th> 
+                                                                <th>Payment Date</th>
+                                                                <th>Due Amount</th>
+                                                                <th>Cheque Number</th>
+                                                                <th>Bank Name</th>
+                                                                <th>Cheque Date</th>
+                                                                <th>UTR Number</th>
+                                                                <th>NEFT Reference</th>
+                                                                <th>RTGS Reference</th>
+                                                                <th>Voucher No.</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="admissionpaymentHistoryBody">
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -464,6 +576,11 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
     <!-- Custom js for this page-->
     <script src="../resources/js/data-table.js"></script>
+
+    <!-- jquery cdn -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+
 
     <!-- for invoice search -->
     <script>
@@ -596,7 +713,230 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
             });
 
         })();
+
+       
     </script>
+
+<script>
+
+     $(document).on("change","#payment_type",function()
+    {
+        var type=$('#payment_type').val();
+        var enroll_fee=$('#enroll').text();
+        var prevPaidfee=$('#prevPaid').text();
+
+        // console.log(type);
+        // console.log(enroll_fee);
+        // console.log(prevPaidfee);
+        
+        
+        
+        if(type=='allot'&& enroll_fee==0 && prevPaidfee==0)
+        {
+           $("#Emiblock").removeClass('d-none');
+           //calculateEMI();
+            
+        }
+        else if(type=='allot'&& enroll_fee==15000 && prevPaidfee==0)
+        {
+             $("#Emiblock").removeClass('d-none');
+            //calculateEMI();
+        }
+        else if(type=='enroll')
+        {
+             $("#Emiblock").addClass('d-none');
+            
+        }
+
+    //   $("#payment_mode").click(function(){
+    //     calculateEMI();
+
+    //   });
+    })
+
+    function calculateEMI() {
+        var type=$('#payment_type').val();
+        var enroll_fee=$('#enroll').text();
+        var prevPaidfee=$('#prevPaid').text();
+        var dueAmount=$('#dueAmount').text();
+
+      const emiMonths = parseInt(document.getElementById('emi_month').value) || 0;
+      const netAmount = parseFloat($('#netAmount').text()) || 0;
+      const paymentMode = $('#payment_mode').val();
+
+      let paidAmount = 0;
+
+      if (paymentMode === 'cash') {
+        paidAmount = parseFloat(document.getElementById('newPayment').value) || 0;
+      } else if (paymentMode === 'cheque') {
+        paidAmount = parseFloat(document.getElementById('newPayment').value) || 0;
+      } else if (paymentMode === 'bank_transfer') {
+        paidAmount = parseFloat(document.getElementById('newPayment').value) || 0;
+      }
+      else
+        {
+        alert("please select payment mode!");
+       
+      }
+
+      if(type=='allot' && enroll_fee==0 && prevPaidfee==0)
+        {
+             dueAmount = netAmount - paidAmount;
+        }
+        if(type=='allot'&& enroll_fee==15000 && prevPaidfee==0)
+        {
+         dueAmount = netAmount - (paidAmount+15000);
+        }
+      // dueAmount = netAmount - paidAmount;
+      const emiReport = document.getElementById('emi_report');
+      const emiAmountSpan = document.getElementById('emi_amount');
+      const emiDueAmountSpan = document.getElementById('emi_due_amount');
+      const emiSchedule = document.getElementById('emi_schedule');
+        //  
+        
+        // if(emiMonths==0 || paymentMode=='')
+        // {
+        //     alert('select Emimonth or PaymentMode');
+        //     location.reload();
+        // }
+        
+      if (emiMonths > 0 && dueAmount > 0 && paymentMode) {
+        // console.log("entered condition of emi report");
+        
+        const emiPerMonth = (dueAmount / emiMonths).toFixed(2);
+        console.log(emiPerMonth);
+        
+        // Format numbers in Indian style
+        const formattedEmi = new Intl.NumberFormat('en-IN').format(emiPerMonth);
+        const formattedDue = new Intl.NumberFormat('en-IN').format(dueAmount.toFixed(2));
+        // console.log(formattedEmi);
+        // console.log(formattedDue);
+        
+        
+        //emiReport.style.display = 'flex';
+        $("#emi_report").removeClass('d-none');
+        emiAmountSpan.textContent = formattedEmi;
+        emiDueAmountSpan.textContent = formattedDue;
+
+        emiSchedule.innerHTML = '';
+        const startDate = new Date(document.getElementById('payment_date').value || new Date());
+
+        for (let i = 1; i <= emiMonths; i++) {
+          const dueDate = new Date(startDate);
+          dueDate.setMonth(startDate.getMonth() + i);
+
+          // Format date as DD-MM-YYYY
+          const formattedDate = `${String(dueDate.getDate()).padStart(2, '0')}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${dueDate.getFullYear()}`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+        <td>${i}</td>
+        <td>${formattedEmi}</td>
+        <td>${formattedDate}</td>
+      `;
+          emiSchedule.appendChild(tr);
+        }
+      } else {
+        emiReport.style.display = 'none';
+      }
+    }
+
+
+    function showPaymentDetails() {
+      document.getElementById("cash_details").style.display = "none";
+      document.getElementById("cheque_details").style.display = "none";
+      document.getElementById("bank_transfer_details").style.display = "none";
+
+      var paymentMethod = document.getElementById("payment_mode").value;
+
+      if (paymentMethod === "cash") {
+        document.getElementById("cash_details").style.display = "block";
+      } else if (paymentMethod === "cheque") {
+        document.getElementById("cheque_details").style.display = "block";
+      } else if (paymentMethod === "bank_transfer") {
+        document.getElementById("bank_transfer_details").style.display = "block";
+        document.getElementById("neft_payment").style.display = "block";
+        document.getElementById("rtgs_payment").style.display = "block";
+        document.getElementById("utr_number").style.display = "block";
+      }
+    }
+
+    function setupBankTransferFieldListeners() {
+      const fields = ['neft_payment', 'rtgs_payment', 'utr_number'];
+      fields.forEach(field => {
+        document.getElementById(field).addEventListener('input', function() {
+          if (this.value.trim() !== '') {
+            fields.forEach(otherField => {
+              if (otherField !== field) {
+                document.getElementById(otherField).style.display = 'none';
+              }
+            });
+          } else {
+            fields.forEach(otherField => {
+              document.getElementById(otherField).style.display = 'block';
+            });
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupBankTransferFieldListeners);
+
+    function appendMemberID() {
+      var paymentMethod = document.getElementById("payment_mode").value;
+      var netAmount = parseFloat(document.getElementById("netAmount").innerText) || 0;
+      var cashAmount = parseFloat(document.getElementById("newPayment").value) || 0;
+      var chequeAmount = parseFloat(document.getElementById("newPayment").value) || 0;
+      var transferAmount = parseFloat(document.getElementById("newPayment").value) || 0;
+      var neftPayment = document.getElementById("neft_payment").value.trim();
+      var rtgsPayment = document.getElementById("rtgs_payment").value.trim();
+      var utrNumber = document.getElementById("utr_number").value.trim();
+      var chequeNumber = document.getElementById("cheque_number").value.trim();
+      var bankName = document.getElementById("bank_name").value.trim();
+      var chequeDate = document.getElementById("cheque_date").value;
+
+      if (!paymentMethod) {
+        alert("Please select a payment mode.");
+        return false;
+      }
+
+      if (paymentMethod === "cash" && (!cashAmount || cashAmount <= 0)) {
+        alert("Please enter a valid cash amount.");
+        return false;
+      }
+
+      if (paymentMethod === "cheque") {
+        if (!chequeAmount || chequeAmount <= 0) {
+          alert("Please enter a valid cheque amount.");
+          return false;
+        }
+        if (!chequeNumber || !bankName || !chequeDate) {
+          alert("Please provide cheque number, bank name, and cheque date.");
+          return false;
+        }
+      }
+
+      if (paymentMethod === "bank_transfer") {
+        if (!transferAmount || transferAmount <= 0) {
+          alert("Please enter a valid transfer amount.");
+          return false;
+        }
+        const filledFields = [neftPayment, rtgsPayment, utrNumber].filter(val => val !== '').length;
+        if (filledFields === 0) {
+          alert("Please provide NEFT, RTGS, or UTR number for bank transfer.");
+          return false;
+        }
+        if (filledFields > 1) {
+          alert("Please provide only one of NEFT, RTGS, or UTR number.");
+          return false;
+        }
+      }
+
+      return true;
+    }
+  </script>
+
+
 
 
     <script>
@@ -604,6 +944,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
         let pendingDeleteRowId = null;
         let pendingDeleteInvoiceId = null;
         let paymentTable = null; // Store DataTable instance
+        let admissionpaymentTable = null;
 
         // Function to show loading overlay
         function showLoadingOverlay() {
@@ -771,6 +1112,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                 return;
             }
 
+           
             showLoadingOverlay();
             fetch('payment_process.php', {
                     method: 'POST',
@@ -781,6 +1123,10 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
+                    console.log(data.payments[0]);
+                    
+                    
                     hideLoadingOverlay();
                     if (data.error) {
                         alert(data.error);
@@ -792,6 +1138,15 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                     const netAmount = parseFloat(data.customer.net_amount) || 0;
                     const payAmount = parseFloat(data.customer.payamount) || 0;
                     const dueAmount = parseFloat(data.customer.due_amount) || 0;
+                     const admAmount = parseFloat(data.customer.admission_charge) || 0;
+                      const resAmount = parseFloat(data.customer.enrollment_charge) || 0;
+                       const cashBack = parseFloat(data.payments[0].cashback) || 0;
+
+                    //    console.log(cashBack);
+                       
+                      if(data.customer.enrollment_charge != "0.00"){
+                        $("#enrolld").css("display", "none");  
+                      }
 
                     document.getElementById('custName').textContent = data.customer.customer_name || 'N/A';
                     document.getElementById('prodName').textContent = data.customer.productname || 'N/A';
@@ -799,6 +1154,9 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                     document.getElementById('prevPaid').textContent = payAmount.toFixed(2);
                     document.getElementById('dueAmount').textContent = dueAmount.toFixed(2);
                     document.getElementById('updatedDue').textContent = dueAmount.toFixed(2);
+                    document.getElementById('admission').textContent = admAmount.toFixed(2);
+                    document.getElementById('enroll').textContent = resAmount.toFixed(2);
+                    document.getElementById('cashback').textContent = cashBack.toFixed(2);
                     document.getElementById('newPayment').value = '';
                     document.getElementById('voucherNumber').value = '';
                     document.getElementById('payment_mode').value = '';
@@ -808,53 +1166,66 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                     showPaymentDetails();
 
                     const paymentBody = document.getElementById('paymentHistoryBody');
+                    const admissionpaymentBody = document.getElementById('admissionpaymentHistoryBody');
 
                     // CRITICAL FIX: Destroy existing DataTable before clearing tbody
                     if (paymentTable) {
                         paymentTable.destroy();
                         paymentTable = null;
                     }
+                     if (admissionpaymentTable) {
+                        admissionpaymentTable.destroy();
+                        admissionpaymentTable = null;
+                    }
 
                     paymentBody.innerHTML = '';
+                    admissionpaymentBody.innerHTML = '';
                     if (data.payments && data.payments.length > 0) {
 
                         // IMPORTANT: Calculate due amounts from LAST to FIRST (oldest to newest)
                         // Start from the last element and work backwards
-                        for (let i = data.payments.length - 1; i >= 0; i--) {
-                            const payment = data.payments[i];
-                            const netAmount = parseFloat(payment.net_amount) || 0;
-                            const paymentAmount = parseFloat(payment.payamount) || 0;
+                        // for (let i = data.payments.length - 1; i >= 0; i--) {
+                        //     const payment = data.payments[i];
+                        //     const netAmount = parseFloat(payment.net_amount) || 0;
+                        //     const paymentAmount = parseFloat(payment.payamount) || 0;
 
-                            let dueAmount;
-                            if (i === data.payments.length - 1) {
-                                // Last row (oldest payment): Net Amount - Payment Amount
-                                dueAmount = netAmount - paymentAmount;
-                            } else {
-                                // For other rows: Next row's due (which we already calculated) - Current Payment
-                                const nextRowDue = parseFloat(data.payments[i + 1].calculatedDue) || 0;
-                                dueAmount = nextRowDue - paymentAmount;
-                            }
+                        //     let dueAmount;
+                        //     if (i === data.payments.length - 1) {
+                        //         // Last row (oldest payment): Net Amount - Payment Amount
+                        //         dueAmount = netAmount - paymentAmount;
+                        //     } else {
+                        //         // For other rows: Next row's due (which we already calculated) - Current Payment
+                        //         const nextRowDue = parseFloat(data.payments[i + 1].calculatedDue) || 0;
+                        //         dueAmount = nextRowDue - paymentAmount;
+                        //     }
 
-                            // Store calculated due
-                            payment.calculatedDue = dueAmount >= 0 ? dueAmount : 0;
-                        }
+                        //     // Store calculated due
+                        //     payment.calculatedDue = dueAmount >= 0 ? dueAmount : 0;
+                        // }
 
                         // Now render the rows with calculated due amounts
                         data.payments.forEach((payment, index) => {
                             const row = document.createElement('tr');
+                            const row1 = document.createElement('tr');
 
                             const netAmount = parseFloat(payment.net_amount) || 0;
                             const paymentAmount = parseFloat(payment.payamount) || 0;
-                            const dueAmount = payment.calculatedDue;
-
+                            // const dueAmount = payment.calculatedDue;
+                            const dueAmount = parseFloat(payment.due_amount) || 0;
+                            console.log(dueAmount);
+                            
                             row.innerHTML = `
             <td>${index + 1}</td>
+            <td>${payment.receipt_no}</td>
             <td>${payment.invoice_id || 'N/A'}</td>
             <td>${payment.customer_name || 'N/A'}</td>
             <td>${payment.productname || 'N/A'}</td>
             <td>${netAmount.toFixed(2)}</td>
             <td>${payment.payment_mode || 'N/A'}</td>
             <td>${paymentAmount.toFixed(2)}</td>
+            <td>${payment.admission_charge || '0'}</td>
+            <td>${payment.enrollment_charge || '0'}</td>
+            <td>${payment.cashback || '0'}</td>
             <td>${payment.created_date ? new Date(payment.created_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'N/A'}</td>
             <td>${dueAmount.toFixed(2)}</td>
             <td>${payment.cheque_number || 'N/A'}</td>
@@ -873,14 +1244,60 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                     <button class="btn btn-primary print-btn" 
                         data-row-id="${payment.id}"
                         data-invoice-id="${payment.invoice_id}"
-                        data-member-id="${payment.member_id || currentCustomer.member_id}">
+                        data-member-id="${payment.member_id || currentCustomer.member_id}"
+                        data-admission="${payment.admission_charge}"
+                        data-enroll="${payment.enrollment_charge}"
+                        data-payamount="${paymentAmount}"
+                        >
                         Print
                     </button>                           
                 </div>
             </td>
         `;
-
+           if(payment.admission_charge==1100)
+            {     
+        row1.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${payment.adm_receipt || 'N/A'}</td>
+            <td>${payment.invoice_id || 'N/A'}</td>
+            <td>${payment.customer_name || 'N/A'}</td>
+            <td>${payment.productname || 'N/A'}</td>
+            <td>${netAmount.toFixed(2)}</td>
+            <td>${payment.payment_mode || 'N/A'}</td>
+            <td>${paymentAmount.toFixed(2)}</td>
+            <td>${payment.admission_charge || '0'}</td>
+            <td>${payment.enrollment_charge || '0'}</td>
+            <td>${payment.created_date ? new Date(payment.created_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'N/A'}</td>
+            <td>${dueAmount.toFixed(2)}</td>
+            <td>${payment.cheque_number || 'N/A'}</td>
+            <td>${payment.bank_name || 'N/A'}</td>
+            <td>${payment.cheque_date || 'N/A'}</td>
+            <td>${payment.utr_number || 'N/A'}</td>
+            <td>${payment.neft_payment || 'N/A'}</td>
+            <td>${payment.rtgs_payment || 'N/A'}</td>
+            <td>${payment.voucher_number || 'N/A'}</td>
+            <td>
+                <select class="form-control status-dropdown" data-id="${payment.id}">
+                    <option value="pending" ${payment.client_payment_status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="confirmed" ${payment.client_payment_status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                </select>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-primary print-btn" 
+                        data-row-id="${payment.id}"
+                        data-invoice-id="${payment.invoice_id}"
+                        data-member-id="${payment.member_id || currentCustomer.member_id}"
+                        data-admission="${payment.admission_charge}"
+                       
+                        ">
+                        Print
+                    </button>                           
+                </div>
+            </td>
+        `;
+            }
                             paymentBody.appendChild(row);
+
+                            admissionpaymentBody.appendChild(row1);
                         });
 
 
@@ -889,8 +1306,15 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                 const rowId = this.getAttribute('data-row-id');
                                 const invoiceId = this.getAttribute('data-invoice-id');
                                 const memberId = this.getAttribute('data-member-id');
-
-                                url = `newemiSaleinvoice.php?invoice_id=${encodeURIComponent(invoiceId)}&member_id=${encodeURIComponent(memberId)}&row_id=${encodeURIComponent(rowId)}`;
+                                const pay = this.getAttribute('data-payamount');
+                                const enroll = this.getAttribute('data-enroll');
+                                const admission = this.getAttribute('data-admission');
+                                // console.log(pay);
+                                // console.log(enroll);
+                                // console.log(admission);
+                                
+                                
+                                url = `newemiSaleinvoice.php?invoice_id=${encodeURIComponent(invoiceId)}&member_id=${encodeURIComponent(memberId)}&row_id=${encodeURIComponent(rowId)}&pay=${encodeURIComponent(pay)}&enroll=${encodeURIComponent(enroll)}&admission=${encodeURIComponent(admission)}`;
                                 // Open in a new tab
                                 window.open(url, '_blank');
                             });
@@ -905,7 +1329,20 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                 "info": true,
                                 "autoWidth": false
                             });
+                              
                         }, 100);
+                        setTimeout(function() {
+                             admissionpaymentTable = $('#admissionpaymentHistory').DataTable({
+                                "responsive": true,
+                                "ordering": true,
+                                "paging": true,
+                                "searching": true,
+                                "info": true,
+                                "autoWidth": false
+                            });
+                              
+                        }, 100);
+                       
 
                         document.querySelectorAll('.status-dropdown').forEach(select => {
                             select.addEventListener('change', function() {
@@ -963,10 +1400,16 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
             }
 
             const newPayment = parseFloat(document.getElementById('newPayment').value) || 0;
-            const updatedDue = parseFloat(document.getElementById('updatedDue').textContent);
+            const updatedDue = parseFloat(document.getElementById('dueAmount').textContent);
             const paymentMode = document.getElementById('payment_mode').value;
+            const paymentType = document.getElementById('payment_type').value;
             const paymentDate = document.getElementById('payment_date').value;
+            const firstallot = parseFloat(document.getElementById('prevPaid').textContent);
+            const admission = parseFloat(document.getElementById('admission').textContent);
+            const enroll = parseFloat(document.getElementById('enroll').textContent);
+            const cashback = parseFloat(document.getElementById('cashback').textContent);
             const voucherNumber = document.getElementById('voucherNumber').value.trim();
+            const receipt = document.getElementById('receipt').value.trim();
             const utrNumber = document.getElementById('utr_number').value.trim();
             const neftPayment = document.getElementById('neft_payment').value.trim();
             const rtgsPayment = document.getElementById('rtgs_payment').value.trim();
@@ -1068,7 +1511,13 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                         formData.append('productname', currentCustomer.productname);
                         formData.append('net_amount', currentCustomer.net_amount);
                         formData.append('payment_mode', paymentMode);
+                        formData.append('payment_type', paymentType);
                         formData.append('payamount', newPayment);
+                        formData.append('firstallot', firstallot);
+                        formData.append('admission', admission);
+                        formData.append('cashback', cashback); 
+                        formData.append('enroll', enroll);
+                        formData.append('receipt', receipt);
                         formData.append('due_amount', updatedDue);
                         formData.append('payment_date', paymentDate);
                         if (voucherNumber) {
@@ -1087,7 +1536,9 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                 formData.append('utr_number', utrNumber);
                             }
                         }
+                        
 
+                        
                         return fetch('payment_process.php', {
                                 method: 'POST',
                                 headers: {
@@ -1104,10 +1555,28 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                             .then(text => {
                                 hideLoadingOverlay();
                                 try {
+
+                                        let r = JSON.parse(text);
+
+        console.log("DATA:", r.data);
+        console.log("COUNT:", r.count);
+        console.log("LOOP:", r.loop);
+        console.log("DEBUG FLOW:", r.debug);
+
+
+
                                     const data = JSON.parse(text);
                                     if (data.success) {
-                                        alert('Payment recorded successfully!\nNew Due Amount: ' + updatedDue.toFixed(2));
-                                        currentCustomer.payamount = (parseFloat(currentCustomer.payamount) || 0) + newPayment;
+                                        console.log(data);
+                                        
+                                        
+                                    let dueAmount =  Number(data.due_amount)-Number(newPayment);
+
+                                alert(
+                                    "Payment recorded successfully!\nNew Due Amount: " +
+                                    dueAmount.toFixed(2)
+                                );
+                                        currentCustomer.payamount =  (parseFloat(currentCustomer.payamount) || 0) + newPayment;;
                                         currentCustomer.due_amount = updatedDue;
                                         document.getElementById('prevPaid').textContent = currentCustomer.payamount.toFixed(2);
                                         document.getElementById('dueAmount').textContent = updatedDue.toFixed(2);

@@ -254,7 +254,7 @@ $stmt = $pdo->query($sql);
         </div>
       </div>
     </div>
-    <!-- <center>
+    <center>
       <div class="col-md-4 col-xl-10 col-lg-10 col-md-10 pt-100 pb-100">
         <div class="footer-widget-4">
           <h5
@@ -291,7 +291,7 @@ $stmt = $pdo->query($sql);
 
         </div>
       </div>
-    </center> -->
+    </center>
 
     <a
       id="whatsappbtn"

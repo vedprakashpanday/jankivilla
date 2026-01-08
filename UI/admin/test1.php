@@ -1,0 +1,13 @@
+&full_name=<?= urlencode($row['full_name']) ?>
+&designation=<?= urlencode($row['designation']) ?>
+&actual_salary=<?= urlencode($row['actual_salary']) ?>
+&salary_month=<?= urlencode($row['salary_month']) ?>
+&advance=<?= urlencode($row['advance']) ?>
+&advance_date=<?= urlencode($row['advance_date']) ?>
+&repayment_type=<?= urlencode($row['repayment_type']) ?>
+&repayment_date=<?= urlencode($row['repayment_date']) ?>
+&rem_due=<?= urlencode($row['rem_due']) ?>
+&cut=<?= urlencode($row['cut']) ?>
+&half_day=<?= urlencode($row['half_day']) ?>
+&absent=<?= urlencode($row['absent']) ?>
+&paid_salary=<?= urlencode($row['paid_salary']) ?>

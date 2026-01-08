@@ -52,25 +52,67 @@
                     <span class="menu-title">Dashboard</span>
                 </a>
             </li>
-            <li class="nav-item ">
-                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#salem" aria-expanded="false" aria-controls="salem">
+
+             <li class="nav-item ">
+                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#memadm" aria-expanded="false" aria-controls="memadm">
                     <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title" style="color:white">Sale Management</span>
+                    <span class="menu-title" style="color:white">Administrative Management</span>
                     <i class="menu-arrow"></i>
                 </a>
-                <div class="collapse " id="salem">
-                    <ul class="nav flex-column sub-menu ">
-
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="Saleinvoice.php"><span class="title"> Sale Invoice</span></a></li>
-                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="NewInvoice.php"><span class="title">New Sale Invoice</span></a></li> -->
-                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="DeleteInvoice.php"><span class="title">Delete Sale Invoice</span></a></li> -->
-
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="IncomeDetails.php"><span class="title">Income Details</span></a></li>
+                <div class="collapse " id="memadm">
+                    <ul class="nav flex-column sub-menu ">                       
+                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="admjoining.php">New Employee Registration</a></li>                       
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="updateadm.php"> Update Employee</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="adm_salary.php"> Add Employee Salary</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="add_advance.php"> Add Employee Advance</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="calc_salary.php"> Calculate Employee Salary</a></li>
+                       
                     </ul>
                 </div>
             </li>
 
+            <!-- <li class="nav-item">
+                <a class="nav-link franchiseSidebar" href="landowner.php">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title" style="color:white">Land Owner</span>
+                </a>
+                
+            </li> -->
+
             <li class="nav-item ">
+                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#lo" aria-expanded="false" aria-controls="web">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title" style="color:white">Land Owner</span>
+                    <i class="menu-arrow"></i>
+                </a>
+                <div class="collapse " id="lo">
+                    <ul class="nav flex-column sub-menu ">
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="landowner.php">Add LandOwner Details</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="lopayment.php">LandOwner Payment Details</a></li>
+                       
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="landowner.php">Land Owner</a></li> -->
+                    </ul>
+                </div>
+
+            </li>
+
+              <li class="nav-item ">
+                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#memm" aria-expanded="false" aria-controls="memm">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title" style="color:white">Member Management</span>
+                    <i class="menu-arrow"></i>
+                </a>
+                <div class="collapse " id="memm">
+                    <ul class="nav flex-column sub-menu ">
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="DistributerJoining.php">New Member Registration</a></li>                        
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="membernominee.php">Update Nominee</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="Editprofile.php"> Update Member</a></li>
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="FindDistributor.php">Find Member</a></li> -->
+                    </ul>
+                </div>
+            </li>
+
+              <li class="nav-item ">
                 <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#comsl" aria-expanded="false" aria-controls="comsl">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title" style="color:white">Comission Slab</span>
@@ -79,8 +121,8 @@
                 <div class="collapse " id="comsl">
                     <ul class="nav flex-column sub-menu ">
                         <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="AdminCommissionSlab.php">Set Admin Comission</a></li> -->
-                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="ComissionSlab.php">Set Member Comission</a></li> -->
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="CommissionMember.php">Set All Member Comission</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="ComissionSlab.php">Set Position-Wise Comission</a></li>
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="CommissionMember.php">Set All Member Comission</a></li> -->
 
 
                     </ul>
@@ -114,21 +156,24 @@
             </li>
 
             <li class="nav-item ">
-                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#memm" aria-expanded="false" aria-controls="memm">
+                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#salem" aria-expanded="false" aria-controls="salem">
                     <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title" style="color:white">Member Management</span>
+                    <span class="menu-title" style="color:white">Sale Management</span>
                     <i class="menu-arrow"></i>
                 </a>
-                <div class="collapse " id="memm">
+                <div class="collapse " id="salem">
                     <ul class="nav flex-column sub-menu ">
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="DistributerJoining.php">New Member Registration</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="membernominee.php">Update Nominee</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="Editprofile.php"> Update Member</a></li>
-                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="FindDistributor.php">Find Member</a></li> -->
+
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="Saleinvoice.php"><span class="title"> Sale Invoice</span></a></li>
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="NewInvoice.php"><span class="title">New Sale Invoice</span></a></li> -->
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="DeleteInvoice.php"><span class="title">Delete Sale Invoice</span></a></li> -->
+
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="IncomeDetails.php"><span class="title">Income Details</span></a></li>
+                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="addproduct.php">Add Plot</a></li>
                     </ul>
                 </div>
             </li>
-
+       
             <li class="nav-item ">
                 <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#cusman" aria-expanded="false" aria-controls="cusman">
                     <i class="icon-grid menu-icon"></i>
@@ -219,7 +264,8 @@
                 <div class="collapse " id="report">
                     <ul class="nav flex-column sub-menu ">
 
-
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="AssociateCommision.php">Associate Commission </a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="testcom.php">test </a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="MemberDetails.php">List of Member </a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="memberkyc.php">Member KYC</a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="RptCustomerDetails.php">List of Customer </a></li>
@@ -266,8 +312,8 @@
                     <ul class="nav flex-column sub-menu ">
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="updatenotice.php">Update Notice</a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="updategallery.php">Update Gallery</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="addproduct.php">Add Plot</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="landowner.php">Land Owner</a></li>
+                       
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="landowner.php">Land Owner</a></li> -->
                     </ul>
                 </div>
 
@@ -282,8 +328,25 @@
                 </a>
                 <div class="collapse " id="reward">
                     <ul class="nav flex-column sub-menu ">
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="rewards.php">Rewards</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="spotcommission.php">Spot Commission</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="rewards.php">Cash-Prize</a></li>
+                        <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="spotcommission.php">Spot Commission</a></li> -->
+                           <li class="nav-item ">
+                <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#cb" aria-expanded="false" aria-controls="web">
+                   
+                    <span class="menu-title" style="color:white">CashBack</span>
+                    <i class="menu-arrow"></i>
+                </a>
+                <div class="collapse " id="cb">
+                    <ul class="nav flex-column sub-menu ">
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="addCashback.php">Add CashBack</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="applyCashback.php">Apply CashBack</a></li>
+                        
+                    </ul>
+                    
+                </div>
+            </li>
+            <li class="nav-item franchiseSidebar"><a class="nav-link" href="sitevisit1.php">Site Visit 1</a></li>
+                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="sitevisit2.php">Site Visit 2</a></li>
                     </ul>
                 </div>
             </li>

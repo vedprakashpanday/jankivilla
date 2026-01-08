@@ -130,6 +130,9 @@ $start_sponsor_id = $_SESSION['sponsor_id'];
                     pt.product_type_name AS product_type,
                     tca.productname AS product_name,
                     tca.area AS squarefeet,
+                    tca.North_East_Corner,
+                    tca.East_Facing,
+                    tca.Main_Road_Corner,
                     tca.rate,
                     tca.gross_amount,
                     tca.corner_charge,
@@ -162,6 +165,9 @@ $start_sponsor_id = $_SESSION['sponsor_id'];
                     <th>Product Type</th>
                     <th>Product Name</th>
                     <th>Square Feet</th>
+                    <th>North East Corner Charge</th>
+                    <th>East Facing Charge</th>
+                    <th>Main Road Corner Charge</th>
                     <th>Rate</th>
                     <th>Gross Amount</th>
                     <th>Corner Charge</th>
@@ -189,6 +195,9 @@ $start_sponsor_id = $_SESSION['sponsor_id'];
                                                                 echo "<td>" . ($row['product_type'] ?: 'N/A') . "</td>";
                                                                 echo "<td>" . ($row['product_name'] ?: 'N/A') . "</td>";
                                                                 echo "<td>" . ($row['squarefeet'] ?: 'N/A') . "</td>";
+                                                                echo "<td>" . ($row['North_East_Corner'] ?: 'N/A') . "</td>";
+                                                                echo "<td>" . ($row['East_Facing'] ?: 'N/A') . "</td>";
+                                                                echo "<td>" . ($row['Main_Road_Corner'] ?: 'N/A') . "</td>";
                                                                 echo "<td>₹" . number_format(floatval($row['rate']) ?: 0, 2) . "</td>";
                                                                 echo "<td>₹" . number_format(floatval($row['gross_amount']) ?: 0, 2) . "</td>";
                                                                 echo "<td>₹" . number_format(floatval($row['corner_charge']) ?: 0, 2) . "</td>";

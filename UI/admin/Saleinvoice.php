@@ -169,6 +169,8 @@ function sendInvoiceEmail($pdo, $invoice_id, $customer_email, $customer_name, $d
 }
 
 if (isset($_POST['btnsubmit'])) {
+
+  $flag=0;
   $productname = $_POST['product_name'];
   $remarks = isset($_POST['remarks']) ? $_POST['remarks'] : '';
   $voucher_number = $_POST['voucher_num'] ?? '';
@@ -176,6 +178,10 @@ if (isset($_POST['btnsubmit'])) {
   $employee_id = $_SESSION['sponsor_id'] ?? '';
   $employee_name = $_SESSION['sponsor_name'] ?? '';
 
+  // echo "<pre>";
+  // var_dump($_POST);
+  // echo "</pre>";
+  // exit();
   try {
     // Validate session variables
     if (empty($employee_id) || empty($employee_name)) {
@@ -209,12 +215,12 @@ if (isset($_POST['btnsubmit'])) {
     $prem_charge = isset($_POST['prem_charge']) && $_POST['prem_charge'] !== '' ? floatval($_POST['prem_charge']) : 0;
     $other_charge = isset($_POST['other_charge']) && $_POST['other_charge'] !== '' ? floatval($_POST['other_charge']) : 0;
     $final_rate = isset($_POST['final_rate']) && $_POST['final_rate'] !== '' ? floatval($_POST['final_rate']) : 0;
-    $date_of_registry = isset($_POST['date_of_registry']) ? $_POST['date_of_registry'] : null;
+    $date_of_registry = (isset($_POST['date_of_registry']) && trim($_POST['date_of_registry']) !== '')? $_POST['date_of_registry']: null;
     $deed_no = isset($_POST['deed_no']) ? $_POST['deed_no'] : null;
     $link_deed_no = isset($_POST['link_deed_no']) ? $_POST['link_deed_no'] : null;
-    $dispatch_date = isset($_POST['dispatch_date']) ? $_POST['dispatch_date'] : null;
+    $dispatch_date = (isset($_POST['dispatch_date']) && trim($_POST['dispatch_date']) !== '')? $_POST['dispatch_date']: null;
     $agreement_no = isset($_POST['agreement_no']) ? $_POST['agreement_no'] : null;
-    $agreement_date = isset($_POST['agreement_date']) ? $_POST['agreement_date'] : null;
+    $agreement_date = (isset($_POST['agreement_date']) && trim($_POST['agreement_date']) !== '')? $_POST['agreement_date']: null;
     $khata_no = isset($_POST['khata_no']) ? $_POST['khata_no'] : null;
     $khesra_no = isset($_POST['khesra_no']) ? $_POST['khesra_no'] : null;
     $rakwa = isset($_POST['rakwa']) ? $_POST['rakwa'] : null;
@@ -241,10 +247,61 @@ if (isset($_POST['btnsubmit'])) {
         $payamount = $transfer_amount;
         break;
     }
+    $admission=0;
+    $resgistration=0;
+    if(!empty($_POST['admission']&& (empty($_POST['enrollment'])) && (empty($_POST['allotment'])))){
+      $admission=$payamount;
+      $payamount = 0;
 
+  //     echo "<pre>";
+  //     print_r("admission available <br>");
+  // print_r($_POST['admission'])."<br>";
+  // print_r($_POST['enrollment'])."<br>";
+  // print_r($admission);
+  // echo "</pre>";
+  // die();
+    }
+    else if(!empty($_POST['enrollment'])&&!empty($_POST['admission'])&&empty($_POST['allotment'])){
+      $resgistration=15000;      
+      $admission=$payamount-$resgistration;  
+       $payamount = 0;
+       $flag=1;
+  //     echo "<pre>";
+  //      print_r("admission available && enrollment also<br>");
+  // print_r($_POST['admission']);
+  // echo "<br>";
+  // print_r($_POST['enrollment']);
+  // echo "<br>";
+  // print_r($admission);
+  // echo "<br>";
+  // print_r($payamount);
+  // echo "</pre>";
+  // die();
+    }
+    else if(!empty($_POST['enrollment'])&&!empty($_POST['admission'])&&!empty($_POST['allotment'])){
+      $resgistration=15000;
+      $admission=1100;
+      $payamount= $payamount-$resgistration-$admission;  
+      $flag=2;
+  //     echo "<pre>";
+  // print_r($_POST['admission'])."<br>";
+  // print_r($_POST['enrollment'])."<br>";
+  // print_r($_POST['allotment'])."<br>";
+  // print_r($admission)."<br>";
+  // print_r($resgistration)."<br>";
+  // echo "</pre>";
+  // die();
+      
+    }
+
+    if($flag==2)
+    {
+      $due_amount = $net_amount - ($payamount+$resgistration);
+    }
+    else{
     // Calculate the due amount
     $due_amount = $net_amount - $payamount;
-
+    }
     // Check for duplicate UTR number, NEFT, or RTGS
     if ($payment_mode === 'bank_transfer') {
       $filled_fields = array_filter([$neft_payment, $rtgs_payment, $utr_number], function ($val) {
@@ -295,19 +352,85 @@ if (isset($_POST['btnsubmit'])) {
 
     // Insert into tbl_customeramount (adding new fields)
     $customer_sql = "INSERT INTO tbl_customeramount (
-                    invoice_id, member_id, customer_id, customer_name, mobile_number, customer_address,
-                    producttype, productname, area, rate, net_amount, payamount, due_amount,
-                    corner_charge, gross_amount, created_date, remarks, emi_month,
-                    project_name, pass_book_no, extent_sqft, prem_charge, other_charge, final_rate,
-                    date_of_registry, deed_no, link_deed_no, dispatch_date, agreement_no,
-                    agreement_date, khata_no, khesra_no, rakwa
+                    invoice_id,
+                     member_id,
+                      customer_id,
+                       customer_name,
+                        mobile_number,
+                         customer_address,
+                    producttype,
+                     productname,
+                      area,
+                       rate,
+                        net_amount,
+                         payamount,
+                          due_amount,
+                    corner_charge,
+                     gross_amount,
+                      created_date,
+                       remarks,
+                        emi_month,
+                    project_name,
+                     pass_book_no,
+                      extent_sqft,
+                       prem_charge,
+                        other_charge,
+                         final_rate,
+                    date_of_registry,
+                     deed_no,
+                      link_deed_no,
+                       dispatch_date,
+                        agreement_no,                        
+                    agreement_date,
+                     khata_no,
+                      khesra_no,
+                       rakwa,
+                       North_East_Corner,
+                       East_Facing,
+                       Main_Road_Corner,
+                       admission_charge,
+                       enrollment_charge,
+                       adm_receipt
                 ) VALUES (
-                    :invoice_id, :member_id, :customer_id, :customer_name, :mobile_number, :customer_address,
-                    :producttype, :productname, :area, :rate, :net_amount, :payamount, :due_amount,
-                    :corner_charge, :gross_amount, :created_date, :remarks, :emi_month,
-                    :project_name, :pass_book_no, :extent_sqft, :prem_charge, :other_charge, :final_rate,
-                    :date_of_registry, :deed_no, :link_deed_no, :dispatch_date, :agreement_no,
-                    :agreement_date, :khata_no, :khesra_no, :rakwa
+                    :invoice_id,
+                     :member_id,
+                      :customer_id,
+                       :customer_name,
+                        :mobile_number,
+                         :customer_address,
+                    :producttype,
+                     :productname,
+                      :area,
+                       :rate,
+                        :net_amount,
+                         :payamount,
+                          :due_amount,                          
+                    :corner_charge,
+                     :gross_amount,
+                      :created_date,
+                       :remarks,
+                        :emi_month,
+                    :project_name,
+                     :pass_book_no,
+                      :extent_sqft,
+                       :prem_charge,
+                        :other_charge,
+                         :final_rate,
+                    :date_of_registry,
+                     :deed_no,
+                      :link_deed_no,
+                       :dispatch_date,
+                        :agreement_no,
+                    :agreement_date,
+                     :khata_no,
+                      :khesra_no,
+                       :rakwa,
+                       :North_East_Corner,
+                       :East_Facing,
+                       :Main_Road_Corner,
+                       :admission_charge,
+                       :enrollment_charge,
+                       :admr
                 )";
 
     $customer_stmt = $pdo->prepare($customer_sql);
@@ -336,15 +459,21 @@ if (isset($_POST['btnsubmit'])) {
       ':prem_charge'      => $prem_charge,
       ':other_charge'     => $other_charge,
       ':final_rate'       => $final_rate,
-      ':date_of_registry' => $date_of_registry,
+      ':date_of_registry' => $date_of_registry ?? null,
       ':deed_no'          => $deed_no,
       ':link_deed_no'     => $link_deed_no,
-      ':dispatch_date'    => $dispatch_date,
+      ':dispatch_date'    => $dispatch_date ?? null,
       ':agreement_no'     => $agreement_no,
-      ':agreement_date'   => $agreement_date,
+      ':agreement_date'   => $agreement_date ?? null,
       ':khata_no'         => $khata_no,
       ':khesra_no'        => $khesra_no,
-      ':rakwa'            => $rakwa
+      ':rakwa'            => $rakwa,
+      ':North_East_Corner'    => $_POST['North_East_Corner'] ?? null,
+          ':East_Facing'          => $_POST['East_Facing'] ?? null,
+          ':Main_Road_Corner'     => $_POST['Main_Road_Corner'] ?? null,
+          ':admission_charge'    => $admission,
+          ':enrollment_charge'    => $resgistration,
+          ':admr' =>$_POST['adm_receipt']?? null
     ]);
 
     // Insert into receiveallpayment (adding new fields)
@@ -356,7 +485,7 @@ if (isset($_POST['btnsubmit'])) {
                     utr_number, neft_payment, rtgs_payment, due_amount, created_date, remarks, emi_month,
                     project_name, pass_book_no, extent_sqft, prem_charge, other_charge, final_rate,
                     date_of_registry, deed_no, link_deed_no, dispatch_date, agreement_no,
-                    agreement_date, khata_no, khesra_no, rakwa
+                    agreement_date, khata_no, khesra_no, rakwa,North_East_Corner,East_Facing,Main_Road_Corner,admission_charge,enrollment_charge,flag,receipt_no,adm_receipt
                 ) VALUES (
                     :invoice_id, :voucher_number, :bill_prepared_by_id, :bill_prepared_by_name,
                     :member_id, :customer_id, :customer_name, :productname, :rate, :area,
@@ -365,7 +494,7 @@ if (isset($_POST['btnsubmit'])) {
                     :utr_number, :neft_payment, :rtgs_payment, :due_amount, :created_date, :remarks, :emi_month,
                     :project_name, :pass_book_no, :extent_sqft, :prem_charge, :other_charge, :final_rate,
                     :date_of_registry, :deed_no, :link_deed_no, :dispatch_date, :agreement_no,
-                    :agreement_date, :khata_no, :khesra_no, :rakwa
+                    :agreement_date, :khata_no, :khesra_no, :rakwa,:North_East_Corner,:East_Facing,:Main_Road_Corner,:admission_charge,:enrollment_charge,:flag,:receipt,:admr
                 )";
 
     $payment_stmt = $pdo->prepare($payment_sql);
@@ -403,15 +532,23 @@ if (isset($_POST['btnsubmit'])) {
       ':prem_charge'          => $prem_charge,
       ':other_charge'         => $other_charge,
       ':final_rate'           => $final_rate,
-      ':date_of_registry'     => $date_of_registry,
+      ':date_of_registry'     => $date_of_registry ?? null,
       ':deed_no'              => $deed_no,
       ':link_deed_no'         => $link_deed_no,
-      ':dispatch_date'        => $dispatch_date,
+      ':dispatch_date'        => $dispatch_date ?? null,
       ':agreement_no'         => $agreement_no,
-      ':agreement_date'       => $agreement_date,
+      ':agreement_date'       => $agreement_date ?? null,
       ':khata_no'             => $khata_no,
       ':khesra_no'            => $khesra_no,
-      ':rakwa'                => $rakwa
+      ':rakwa'                => $rakwa,
+      ':North_East_Corner'    => $_POST['North_East_Corner'] ?? null,
+          ':East_Facing'          => $_POST['East_Facing'] ?? null,
+          ':Main_Road_Corner'     => $_POST['Main_Road_Corner'] ?? null,
+          ':admission_charge'     => $admission,
+          ':enrollment_charge'    => $resgistration,
+          ':flag' => $flag,
+          ':receipt' => $_POST['receipt'],
+          ':admr' => $_POST['adm_receipt']??null
     ]);
 
     // Insert into emi_schedule_records (adding new fields)
@@ -428,7 +565,7 @@ if (isset($_POST['btnsubmit'])) {
                     emi_amount, due_date,
                     project_name, pass_book_no, extent_sqft, prem_charge, other_charge, final_rate,
                     date_of_registry, deed_no, link_deed_no, dispatch_date, agreement_no,
-                    agreement_date, khata_no, khesra_no, rakwa
+                    agreement_date, khata_no, khesra_no, rakwa,North_East_Corner,East_Facing,Main_Road_Corner,admission_charge,enrollment_charge,adm_receipt
                 ) VALUES (
                     :invoice_id, :voucher_number, :bill_prepared_by_id, :bill_prepared_by_name,
                     :member_id, :customer_id, :customer_name, :customer_mobile, :customer_email,
@@ -442,7 +579,7 @@ if (isset($_POST['btnsubmit'])) {
                     :emi_amount, :due_date,
                     :project_name, :pass_book_no, :extent_sqft, :prem_charge, :other_charge, :final_rate,
                     :date_of_registry, :deed_no, :link_deed_no, :dispatch_date, :agreement_no,
-                    :agreement_date, :khata_no, :khesra_no, :rakwa
+                    :agreement_date, :khata_no, :khesra_no, :rakwa,:North_East_Corner,:East_Facing,:Main_Road_Corner,:admission_charge,:enrollment_charge,:admr
                 )";
 
     $emi_stmt = $pdo->prepare($emi_sql);
@@ -507,15 +644,21 @@ if (isset($_POST['btnsubmit'])) {
           ':prem_charge'          => $prem_charge,
           ':other_charge'         => $other_charge,
           ':final_rate'           => $final_rate,
-          ':date_of_registry'     => $date_of_registry,
+          ':date_of_registry'     => $date_of_registry ?? null,
           ':deed_no'              => $deed_no,
           ':link_deed_no'         => $link_deed_no,
-          ':dispatch_date'        => $dispatch_date,
+          ':dispatch_date'        => $dispatch_date ?? null ,
           ':agreement_no'         => $agreement_no,
-          ':agreement_date'       => $agreement_date,
+          ':agreement_date'       => $agreement_date ?? null,
           ':khata_no'             => $khata_no,
           ':khesra_no'            => $khesra_no,
-          ':rakwa'                => $rakwa
+          ':rakwa'                => $rakwa,
+          ':North_East_Corner'    => $_POST['North_East_Corner'] ?? null,
+          ':East_Facing'          => $_POST['East_Facing'] ?? null,
+          ':Main_Road_Corner'     => $_POST['Main_Road_Corner'] ?? null,
+          ':admission_charge'     => $admission,
+          ':enrollment_charge'    => $resgistration,
+          ':admr' => $_POST['adm_receipt'] ?? null
         ]);
       }
     } else {
@@ -573,15 +716,21 @@ if (isset($_POST['btnsubmit'])) {
         ':prem_charge'          => $prem_charge,
         ':other_charge'         => $other_charge,
         ':final_rate'           => $final_rate,
-        ':date_of_registry'     => $date_of_registry,
+        ':date_of_registry'     => $date_of_registry ?? null,
         ':deed_no'              => $deed_no,
         ':link_deed_no'         => $link_deed_no,
-        ':dispatch_date'        => $dispatch_date,
+        ':dispatch_date'        => $dispatch_date ?? null,
         ':agreement_no'         => $agreement_no,
-        ':agreement_date'       => $agreement_date,
+        ':agreement_date'       => $agreement_date ?? null,
         ':khata_no'             => $khata_no,
         ':khesra_no'            => $khesra_no,
-        ':rakwa'                => $rakwa
+        ':rakwa'                => $rakwa,
+        ':North_East_Corner'    => $_POST['North_East_Corner'] ?? null,
+          ':East_Facing'          => $_POST['East_Facing'] ?? null,
+          ':Main_Road_Corner'     => $_POST['Main_Road_Corner'] ?? null,
+          ':admission_charge'     => $admission,
+          ':enrollment_charge'    => $resgistration,
+          ':admr' => $_POST['adm_receipt'] ?? null
       ]);
     }
 
@@ -709,6 +858,7 @@ if (isset($_POST['btnsubmit'])) {
   <link href="assets/css/vendor.bundle.base.css" rel="stylesheet" />
   <link href="../assets/css/vendor.bundle.base.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/themify-icons.css" />
+  
 
   <style>
     .navbar .navbar-brand-wrapper .navbar-brand img {
@@ -1297,9 +1447,16 @@ if (isset($_POST['btnsubmit'])) {
                   <form method="post" action="" onsubmit="return appendMemberID();" id="form1">
                     <div class="box-body">
                       <!-- Date Field -->
-                      <div class="form-group">
-                        <label for="date">Date:</label>
+                      <div class="form-group col-12 d-flex">
+                        <div class="col-6">
+                        <label for="date">Payment Receipt Date:</label>
                         <input type="date" class="form-control" name="date" id="date" onchange="calculateEMI()">
+                        </div>
+                        <div class="col-6">
+                          <label for="receipt">Enrollment/Allotment Receipt No :</label>
+                        <input type="text" class="form-control" name="receipt" id="receipt" placeholder="Enter Receipt Number" required>
+                        </div>
+
                       </div>
 
                       <!-- Refer By Section -->
@@ -1413,6 +1570,18 @@ if (isset($_POST['btnsubmit'])) {
                           <label>Rate:</label>
                           <input type="text" class="form-control" name="rate" id="rate" placeholder="Enter Rate">
                         </div>
+                        <!-- <div class="form-group col-md-6">
+                          <label>North East Corner Charge:</label>
+                          <input type="text" class="form-control" name="North_East_Corner" id="North_East_Corner" placeholder="North East Corner Charge">
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label>East Facing Charge:</label>
+                          <input type="text" class="form-control" name="East_Facing" id="East_Facing" placeholder="East Facing Charge">
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label>Main Road Corner Charge:</label>
+                          <input type="text" class="form-control" name="Main_Road_Corner" id="Main_Road_Corner" placeholder="Main Road Corner Charge">
+                        </div> -->
                         <div class="form-group col-md-6">
                           <label>Point:</label>
                           <input type="text" class="form-control" name="point" id="point" readonly>
@@ -1427,7 +1596,7 @@ if (isset($_POST['btnsubmit'])) {
                         </div>
                         <div class="form-group col-md-6">
                           <label>Pass Book No.:</label>
-                          <input type="text" class="form-control" name="pass_book_no" id="pass_book_no" placeholder="Enter Pass Book No.">
+                          <input type="text" class="form-control" name="pass_book_no" id="pass_book_no" placeholder="Enter Pass Book No." value="" readonly>
                         </div>
                         <div class="form-group col-md-6">
                           <label>Extent in Sqft.:</label>
@@ -1438,6 +1607,25 @@ if (isset($_POST['btnsubmit'])) {
                           <label>Dimension:</label>
                           <input type="text" class="form-control" name="dimension" id="dimension" readonly>
                         </div>
+
+                        <div class="form-group col-md-6">
+                       <div class="form-group col-12 d-flex justify-content-between gap-3">
+                      <!-- <input type="hidden" name="typeId" id="typeIdforradio" value="">
+                      <input type="hidden" name="typeName" id="nameforradio" value=""> -->
+                      
+                     
+
+
+                        <input type="radio" class="btn-check" id="NEC" autocomplete="off" name="extraa_charge" value="">
+                        <label class="btn btn-primary text-white" for="NEC">North East Corner Charge</label>
+
+                        <input type="radio" class="btn-check" id="EFC" autocomplete="off" name="extraa_charge" value="">
+                        <label class="btn btn-primary text-white" for="EFC">East Facing Charge</label>
+
+                        <input type="radio" class="btn-check" id="MRC" autocomplete="off" name="extraa_charge" value="">
+                        <label class="btn btn-primary text-white" for="MRC">Main Road Corner Charge</label>
+                      </div>
+                      </div>
 
                         <input type="hidden" id="total_area" name="total_area">
                       </div>
@@ -1525,13 +1713,30 @@ if (isset($_POST['btnsubmit'])) {
                           <input type="text" class="form-control" name="net_amount" id="net_amount" readonly>
                         </div>
                         <div class="form-group col-md-6">
-                          <label>Voucher Number:</label>
-                          <input type="text" class="form-control" name="voucher_num" id="voucher" placeholder="Enter Voucher Number">
+                          <label>Debit Voucher number:</label>
+                          <input type="text" class="form-control" name="voucher_number" id="voucher_number" readonly>
+                        </div>
+                        <div class="form-group col-md-6 d-none admr">
+                          <label>Admission Receipt Number:</label>
+                          <input type="text" class="form-control " name="adm_receipt" id="adm_receipt" placeholder="Enter Admission Receipt" >
                         </div>
                       </div>
 
                       <!-- Payment Mode -->
                       <h3>Payment Mode</h3>
+                      <div class="form-row">
+                       <div class="form-group col-5 d-flex justify-content-between gap-3">
+                        <input type="checkbox" class="btn-check" id="admission" autocomplete="off" name="admission" value="admission">
+                        <label class="btn btn-dark text-white" for="admission">Admission Payment</label>
+
+                        <input type="checkbox" class="btn-check" id="enrollment" autocomplete="off" name="enrollment" value="enrollment">
+                        <label class="btn btn-dark text-white" for="enrollment">Enrollment Payment</label>
+
+                        <input type="checkbox" class="btn-check" id="allotment" autocomplete="off" name="allotment" value="allotment">
+                        <label class="btn btn-dark text-white" for="allotment">Allotment Payment</label>
+                      </div>
+                      </div>
+
                       <div class="form-row">
                         <div class="form-group col-md-6">
                           <label>Payment Mode:</label>
@@ -1542,7 +1747,8 @@ if (isset($_POST['btnsubmit'])) {
                             <option value="bank_transfer">Bank Transfer</option>
                           </select>
                         </div>
-                        <div class="form-group col-md-6">
+
+                        <div class="form-group col-md-6 d-none emib">
                           <label>EMI Months:</label>
                           <select class="form-control" name="emi_month" id="emi_month" onchange="calculateEMI()">
                             <option value="">Select EMI Months</option>
@@ -1741,6 +1947,33 @@ if (isset($_POST['btnsubmit'])) {
     //]]>
   </script>
 
+  <script>
+    $(document).on('click',"#allotment",function(){
+      // console.log("entered");
+      
+      $('.emib').toggleClass('d-none');
+    });
+
+  $(document).on('click', "#admission", function () {
+
+    const $wrapper = $('.admr');
+    const $input = $('#adm_receipt');
+
+    if ($wrapper.hasClass('d-none')) {
+        // SHOW field
+        $wrapper.removeClass('d-none');
+        $input.prop('required', true);
+        $input.prop('disabled', false);
+    } else {
+        // HIDE field
+        $wrapper.addClass('d-none');
+        $input.prop('required', false);
+        $input.prop('disabled', true);
+        $input.val('');
+    }
+});
+  </script>
+
   <script type="text/javascript">
     //<![CDATA[
     var ContentPlaceHolder1_RegularExpressionValidator4 = document.all ?
@@ -1925,8 +2158,10 @@ if (isset($_POST['btnsubmit'])) {
         });
       });
 
+      var tid=0;
     document.getElementById('product_type').addEventListener('change', function() {
-      let productTypeId = this.value;
+      let productTypeId = this.value; 
+
       fetch('fetch_products.php?product_type_id=' + productTypeId)
         .then(response => response.json())
         .then(data => {
@@ -1946,7 +2181,8 @@ if (isset($_POST['btnsubmit'])) {
 
     // When product name changes, fetch squarefeet options
     document.getElementById('product_name').addEventListener('change', function() {
-      let productName = this.value;
+      let productName = this.value;     
+
       fetch('fetch_squarefeet.php?product_name=' + encodeURIComponent(productName))
         .then(response => response.json())
         .then(data => {
@@ -1971,6 +2207,9 @@ if (isset($_POST['btnsubmit'])) {
           document.getElementById('point').value = data.Points;
           document.getElementById('quantity').value = data.Quantity;
           document.getElementById('dimension').value = data.dimension;
+          document.getElementById('MRC').value = data.mainroad_corner_charge;
+          document.getElementById('EFC').value = data.east_facing_charge;
+          document.getElementById('NEC').value = data.ne_corner_charge;
         });
     });
   </script>
@@ -2002,14 +2241,55 @@ if (isset($_POST['btnsubmit'])) {
       let premCharge = parseFloat(document.getElementById('prem_charge').value) || 0;
       let otherCharge = parseFloat(document.getElementById('other_charge').value) || 0;
       let cornerCharge = parseFloat(document.getElementById('corner_charge').value) || 0;
-      let grossAmount = amount + premCharge + otherCharge + cornerCharge;
-      document.getElementById('gross_amount').value = grossAmount.toFixed(2);
 
-      let discPercent = parseFloat(document.getElementById('discount_percent').value) || 0;
-      let discRs = parseFloat(document.getElementById('discount_rs').value) || 0;
-      let percentageDiscount = (grossAmount * discPercent) / 100;
-      let netAmount = grossAmount - percentageDiscount - discRs;
-      document.getElementById('net_amount').value = netAmount.toFixed(2);
+     // Initial values
+        // let selectedCorner = $('input[name="corner_type"]:checked').val() || 0;
+        // let cornerValue = parseFloat(selectedCorner) || 0;
+
+        let grossAmount = 0; // GLOBAL variable declare karo
+        let discPercent = 0;
+        let discRs = 0;
+
+// 1. GROSS AMOUNT CALCULATOR
+function calculateGrossAmount() {
+
+    // get selected radio button
+    let selectedCorner = $('input[name="extraa_charge"]:checked').val() || 0;
+    let cornerValue = parseFloat(selectedCorner) || 0;
+  let sqft = parseFloat(document.getElementById('squarefeet').value) || 0;
+  let rate = parseFloat(document.getElementById('rate').value) || 0;
+
+    grossAmount = amount + premCharge + otherCharge + cornerCharge + (sqft*cornerValue);
+
+    $('#gross_amount').val(grossAmount.toFixed(2));
+
+    calculateNetAmount();
+}
+
+
+// 2. NET AMOUNT CALCULATOR (grossAmount pe dependent)
+function calculateNetAmount() {
+    discPercent = parseFloat($('#discount_percent').val()) || 0;
+    discRs = parseFloat($('#discount_rs').val()) || 0;
+    
+    let percentageDiscount = (grossAmount * discPercent) / 100;
+    let netAmount = grossAmount - percentageDiscount - discRs;
+    
+    $('#net_amount').val(netAmount.toFixed(2));
+    // console.log("Net Updated:", netAmount);
+}
+
+// 3. ALL INPUTS pe listeners
+$(document).on('input', '#MRC, #EFC, #NEC, #discount_percent, #discount_rs', function() {
+    if (['MRC', 'EFC', 'NEC'].includes(this.id)) {
+        calculateGrossAmount(); // Gross change → Net auto
+    } else {
+        calculateNetAmount(); // Discount change → Net update
+    }
+});
+
+// 4. INITIAL calculation
+calculateGrossAmount();
 
       calculateEMI();
     }
@@ -2137,7 +2417,13 @@ if (isset($_POST['btnsubmit'])) {
       document.getElementById('state').value = element.getAttribute('data-state');
       document.getElementById('district').value = element.getAttribute('data-district');
 
-      // Hide dropdown
+      if(!element.getAttribute('data-pass') || element.getAttribute('data-pass') === 'null'){
+        document.getElementById('pass_book_no').removeAttribute('readonly');
+      } else {
+        document.getElementById('pass_book_no').value = element.getAttribute('data-pass');
+        document.getElementById('pass_book_no').addAttribute('readonly');
+      }
+      // Hide dropdown 
       customerDropdown.classList.remove('show');
     }
 

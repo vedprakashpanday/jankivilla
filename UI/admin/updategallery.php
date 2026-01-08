@@ -1,4 +1,6 @@
 ﻿<?php
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 1);
 session_start();
 include_once "connectdb.php";
 
@@ -8,41 +10,41 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
     exit();
 }
 
-// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
-//     $delete_id = $_POST['delete_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+    $delete_id = $_POST['delete_id'];
 
-//     if (!empty($delete_id)) {
-//         try {
-//             // Fetch the image filename before deleting
-//             $stmt = $pdo->prepare("SELECT image FROM img_gallery WHERE id = :id");
-//             $stmt->execute(['id' => $delete_id]);
-//             $imageData = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!empty($delete_id)) {
+        try {
+            // Fetch the image filename before deleting
+            $stmt = $pdo->prepare("SELECT image FROM img_gallery WHERE id = :id");
+            $stmt->execute(['id' => $delete_id]);
+            $imageData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-//             if ($imageData) {
-//                 $imagePath = '../../img_gallery/' . $imageData['image'];
+            if ($imageData) {
+                $imagePath = '../../img_gallery/' . $imageData['image'];
 
-//                 // Delete the record from the database
-//                 $stmt = $pdo->prepare("DELETE FROM img_gallery WHERE id = :id");
-//                 $stmt->bindParam(':id', $delete_id, PDO::PARAM_INT);
+                // Delete the record from the database
+                $stmt = $pdo->prepare("DELETE FROM img_gallery WHERE id = :id");
+                $stmt->bindParam(':id', $delete_id, PDO::PARAM_INT);
 
-//                 if ($stmt->execute()) {
-//                     // Unlink (delete) the image file if it exists
-//                     if (file_exists($imagePath) && !empty($imageData['image'])) {
-//                         unlink($imagePath);
-//                     }
+                if ($stmt->execute()) {
+                    // Unlink (delete) the image file if it exists
+                    if (file_exists($imagePath) && !empty($imageData['image'])) {
+                        unlink($imagePath);
+                    }
 
-//                     echo "<script>alert('Image deleted successfully!'); window.location.href = '';</script>";
-//                 } else {
-//                     echo "<script>alert('Failed to delete image!');</script>";
-//                 }
-//             } else {
-//                 echo "<script>alert('Image not found!');</script>";
-//             }
-//         } catch (PDOException $e) {
-//             echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
-//         }
-//     }
-// }
+                    echo "<script>alert('Image deleted successfully!'); window.location.href = '';</script>";
+                } else {
+                    echo "<script>alert('Failed to delete image!');</script>";
+                }
+            } else {
+                echo "<script>alert('Image not found!');</script>";
+            }
+        } catch (PDOException $e) {
+            echo "<script>alert('Error: " . $e->getMessage() . "');</script>";
+        }
+    }
+}
 
 
 // Fetch all images for display
@@ -71,56 +73,56 @@ if (isset($_GET['id'])) {
 }
 
 // Handle form submission
-// if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-//     $title = $_POST['title'];
-//     $image = $edit_image; // Default to existing image
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $title = $_POST['title'];
+    $image = $edit_image; // Default to existing image
 
-//     // Handle image upload if a new file is provided
-//     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-//         $image = $_FILES['image']['name'];
-//         $target_dir = '../../img_gallery/';
-//         $target_file = $target_dir . basename($image);
+    // Handle image upload if a new file is provided
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $image = $_FILES['image']['name'];
+        $target_dir = '../../img_gallery/';
+        $target_file = $target_dir . basename($image);
 
-//         if (!move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-//             echo "<div class='alert alert-danger'>Error uploading file.</div>";
-//             $image = $edit_image; // Revert to old image on failure
-//         }
-//     }
+        if (!move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+            echo "<div class='alert alert-danger'>Error uploading file.</div>";
+            $image = $edit_image; // Revert to old image on failure
+        }
+    }
 
-//     try {
-//         if (isset($_POST['edit_id']) && !empty($_POST['edit_id'])) {
-//             // Update existing record
-//             $sql = "UPDATE img_gallery SET title = :title, image = :image WHERE id = :id";
-//             $stmt = $pdo->prepare($sql);
-//             $stmt->execute([
-//                 'title' => $title,
-//                 'image' => $image,
-//                 'id' => $_POST['edit_id']
-//             ]);
+    try {
+        if (isset($_POST['edit_id']) && !empty($_POST['edit_id'])) {
+            // Update existing record
+            $sql = "UPDATE img_gallery SET title = :title, image = :image WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'title' => $title,
+                'image' => $image,
+                'id' => $_POST['edit_id']
+            ]);
 
-//             if ($edit_mode && $image !== $edit_image) {
-//                 unlink($target_dir . $edit_image);
-//             }
+            if ($edit_mode && $image !== $edit_image) {
+                unlink($target_dir . $edit_image);
+            }
 
-//             echo "<div class='alert alert-success'>Image updated successfully!</div>";
-//         } else {
-//             // Insert new record
-//             $sql = "INSERT INTO img_gallery (title, image) VALUES (:title, :image)";
-//             $stmt = $pdo->prepare($sql);
-//             $stmt->execute([
-//                 'title' => $title,
-//                 'image' => $image
-//             ]);
-//             echo "<div class='alert alert-success'>Image uploaded successfully!</div>";
-//         }
+            echo "<div class='alert alert-success'>Image updated successfully!</div>";
+        } else {
+            // Insert new record
+            $sql = "INSERT INTO img_gallery (title, image) VALUES (:title, :image)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                'title' => $title,
+                'image' => $image
+            ]);
+            echo "<div class='alert alert-success'>Image uploaded successfully!</div>";
+        }
 
-//         // Refresh page after submission to clear POST data and reload images
-//         header("Location: updategallery.php");
-//         exit();
-//     } catch (PDOException $e) {
-//         echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
-//     }
-// }
+        // Refresh page after submission to clear POST data and reload images
+        header("Location: updategallery.php");
+        exit();
+    } catch (PDOException $e) {
+        echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
+    }
+}
 ?>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
