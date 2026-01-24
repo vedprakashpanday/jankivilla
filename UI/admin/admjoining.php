@@ -27,6 +27,7 @@ if (isset($_POST['btnsubmit'])) {
     $nationality    = trim($_POST['nationality']);
     $dob = !empty($_POST['Dob']) ? $_POST['Dob'] : null;
     $proofType     = $_POST['proofType'];
+    $bloodgroup    = $_POST['bloodgroup'] ?? null;
 
     $date_of_anniversary = !empty($_POST['date_of_anniversary'])
         ? $_POST['date_of_anniversary']
@@ -43,6 +44,7 @@ if (isset($_POST['btnsubmit'])) {
     $mem_pass       = $_POST['mem_pass'];
     $datetime       = date('Y-m-d H:i:s');
     $date = date('Y-m-d');
+    $doj= !empty($_POST['Doj']) ? $_POST['Doj'] : null;
 
     $newEntry = [
         'designation' => $designation,
@@ -62,7 +64,7 @@ if ($checkStmt->rowCount() == 0) {
     $insertStmt = $pdo->prepare("INSERT INTO adm_desig (designation) VALUES (?)");
     $insertStmt->execute([$designation]);
 
-    echo "Designation inserted successfully";
+   
 }
 
     // 4. JSON encode + UPDATE database
@@ -93,14 +95,35 @@ if ($checkStmt->rowCount() == 0) {
     $kyc = $pdo->prepare("INSERT INTO tbl_kyc (sponsor_id, address_proof_file) VALUES (?, ?)");
     $kyc->execute([$m_id, $all_files]);
 
+      $sql = "INSERT INTO tbl_bank_details (
+            member_id,account_name,account_no,bank_name,branch,ifsc_code,created_at
+        ) VALUES (
+            :id,:acc_name,:acc_no,:b_name,:br,:ifsc,now()
+        )";
+
+        $stmt = $pdo->prepare($sql);
+
+     $stmt->execute([
+     'id'=>$m_id,
+     'acc_name'=>$_POST['ach_name']??null,
+     'acc_no'=>$_POST['ba_number']??null,
+     'b_name'=>$_POST['b_name']??null,
+     'br'=>$_POST['br_name']??null,
+     'ifsc'=>$_POST['ifsc']??null
+     ]);
+
+
+
+
+
     // Insert into tbl_regist
     $sql = "INSERT INTO adm_regist 
             (full_name, mother_name, father_spouse_name, gender, designation, 
              dob, anniversary_date,contact_no,email, password, create_time, communication_address, city, 
              aadhar_no, pan_no, member_id, alternate_no, native_place, pin_code, 
-             marital_status, nationality,designations,proof_type)
+             marital_status, nationality,designations,proof_type,doj, blood_group)
             VALUES 
-            ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+            ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -127,7 +150,9 @@ if ($checkStmt->rowCount() == 0) {
         $marital_status,
         $nationality,
         $newJson,
-        $proofType
+        $proofType,
+        $doj,
+        $bloodgroup
     ]);
 
     // Insert into tbl_hire
@@ -346,6 +371,27 @@ if ($checkStmt->rowCount() == 0) {
                                                             <b>Date of Birth</b>
                                                             <input name="Dob" type="date" class="form-control">
                                                         </div>
+                                                           <!-- File Upload -->
+                                                       <div class="col-md-4">
+    
+                                                            <b>Select Blood Group</b>
+                                                            <select class="form-control" id="bloodgroup" name="bloodgroup">
+                                                                 <option value="">-- Select Blood Group --</option>
+                                                                            <option value="A+">A+</option>
+                                                                            <option value="A-">A-</option>
+                                                                            <option value="B+">B+</option>
+                                                                            <option value="B-">B-</option>
+                                                                            <option value="AB+">AB+</option>
+                                                                            <option value="AB-">AB-</option>
+                                                                            <option value="O+">O+</option>
+                                                                            <option value="O-">O-</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="col-md-4">
+                                                            <b>Date of Joining</b>
+                                                            <input name="Doj" type="date" class="form-control">
+                                                        </div>
 
                                                         <div class="col-md-4" id="DOA">
                                                             <b>Date of Anniversary</b>
@@ -424,6 +470,61 @@ if ($checkStmt->rowCount() == 0) {
                                                             <input name="address_proof_file[]" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" id="proofFile" multiple>
                                                             <small class="text-muted" id="proofHint"></small>
                                                         </div>
+
+                                                        <!-- ==================== Bank DETAILS  start==================== -->
+ <div class="col-md-12">
+                                                   
+                                                        <h2>Bank Details</h2>
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <b>Account Holder Name:</b>
+                                                                <i><input name="ach_name" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+
+
+
+
+                                                            <div class="col-md-4">
+                                                                <b> Bank A/c No:</b>
+
+                                                                <i> <input name="ba_number" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <b>Bank Name:</b>
+
+                                                                <i> <input name="b_name" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <b>
+                                                                    Branch Name:
+                                                                </b>
+                                                                <i>
+                                                                    <input name="br_name" type="text" id="" class="form-control" style="font-weight:bold;">
+                                                                </i>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <b>
+                                                                    IFSC Code:</b>
+                                                                <i><input name="ifsc" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        
+
+                                                    </div>
+                                              
+
+
+<!-- ==================== Bank DETAILS end ==================== -->
+
+
 
 
                                                         <!-- Hidden DateTime -->

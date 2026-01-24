@@ -124,6 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
                                                                 <th align="left" scope="col" style="width:100px;">Customer Mobile</th>
                                                                 <th align="left" scope="col" style="width:100px;">Customer Email</th>
                                                                 <th align="left" scope="col" style="width:100px;">Customer Aadhar</th>
+                                                                <th align="left" scope="col" style="width:100px;">Bank Name</th>
+                                                                <th align="left" scope="col" style="width:100px;">Branch Name</th>
+                                                                <th align="left" scope="col" style="width:100px;">IFSC Code</th>
+                                                                <th align="left" scope="col" style="width:100px;">Bank Account Number</th>
+                                                                <th align="left" scope="col" style="width:100px;">Bank Account Holder Name</th>
                                                                 <th align="left" scope="col" style="width:100px;">Pan No</th>
                                                                 <th align="left" scope="col" style="width:100px;">Nominee Name</th>
                                                                 <th align="left" scope="col" style="width:100px;">Nominee Aadhar</th>
@@ -135,12 +140,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
                                                             <?php
                                                             try {
                                                                 $stmt = $pdo->prepare("
-                SELECT id, customer_id, password, customer_name, customer_mobile, 
-                       customer_email, aadhar_number, pan_number, created_at, nominee_name, 
-                       nominee_aadhar, address, state, district 
-                FROM customer_details 
-                ORDER BY id DESC
-            ");
+    SELECT 
+        cd.id,
+        cd.customer_id,
+        cd.password,
+        cd.customer_name,
+        cd.customer_mobile,
+        cd.customer_email,
+        cd.aadhar_number,
+        cd.pan_number,
+        cd.created_at,
+        cd.nominee_name,
+        cd.nominee_aadhar,
+        cd.address,
+        cd.state,
+        cd.district,
+        cd.booking_date,
+        bd.bank_name,
+        bd.branch,
+        bd.ifsc_code,
+        bd.account_no,
+        bd.account_name
+    FROM customer_details cd
+    LEFT JOIN tbl_bank_details bd
+        ON cd.customer_id COLLATE utf8mb4_general_ci
+           = bd.member_id COLLATE utf8mb4_general_ci
+    ORDER BY cd.id DESC
+");
+
                                                                 $stmt->execute();
                                                                 $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -160,6 +187,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
                                                                     echo '<td><span>' . htmlspecialchars($customer['customer_mobile']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['customer_email']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['aadhar_number']) . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['bank_name']) . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['branch']) . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['ifsc_code']) . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['account_no']) . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['account_name']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['pan_number']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['nominee_name']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['nominee_aadhar']) . '</span></td>';
@@ -167,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
                                                                     echo '<td><span>' . htmlspecialchars($customer['state']) . '</span></td>';
                                                                     echo '<td><span>' . htmlspecialchars($customer['district']) . '</span></td>';
                                                                     $date = date('d-M-Y h:i A', strtotime($customer['created_at']));
-                                                                    echo '<td><span>' . $date . '</span></td>';
+                                                                    echo '<td><span>' . htmlspecialchars($customer['booking_date']) . '</span></td>';
 
                                                                     echo '</tr>';
                                                                 }

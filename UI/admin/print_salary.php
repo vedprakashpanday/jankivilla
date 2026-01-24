@@ -196,11 +196,37 @@ switch ($months) {
             $absent=0;
             $half_day=0;
 
-                                                                    $stmt = $pdo->prepare("SELECT ar.full_name,ar.designation,ar.member_id, ads.* FROM adm_regist ar left join calc_salary ads on ar.member_id=ads.staff_id Where ads.salary_month=:id");
-                                                                $stmt->execute([
-                                                                    ":id"=>$date
-                                                                ]);
-                                                                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                        $stmt = $pdo->prepare("
+    SELECT 
+        ar.full_name,
+        ar.designation,
+        ar.member_id,
+
+        ads.salary_month,
+
+        MAX(ads.actual_salary)   AS actual_salary,
+        MAX(ads.absent)          AS absent,
+        MAX(ads.half_day)        AS half_day,
+        MAX(ads.paid_salary)     AS paid_salary,
+
+        SUM(ads.advance)         AS advance,   -- ✔ multiple advances
+        MAX(ads.cut)             AS cut,       -- ✔ single recovery
+        MAX(ads.rem_due)         AS rem_due,   -- ✔ remaining due
+
+        MAX(ads.remarks)         AS remarks
+
+    FROM adm_regist ar
+    LEFT JOIN calc_salary ads 
+        ON ar.member_id = ads.staff_id
+
+    WHERE ads.salary_month = :id
+
+    GROUP BY ar.member_id, ads.salary_month
+");
+$stmt->execute([
+    ":id" => $date
+]);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                 $i=1;
                                                                
                                                                 // echo "<pre>";
@@ -230,8 +256,10 @@ switch ($months) {
                                                                     $t_advance += $row['advance'];
                                                                     $t_recover += $row['cut'];
                                                                     $t_net_advance += $row['rem_due'];
-                                                                    $t_net_pay += $row['paid_salary'];
-                                                                    $netpay=$earned-$row['cut'];
+                                                                    
+                                                                    $netpay=$row['paid_salary'];
+                                                                    $t_net_pay += $netpay;
+                                                                    if($netpay>=0):
                                                                 ?>
             <tr>
                 <td><?= $i++ ?></td>
@@ -251,7 +279,7 @@ switch ($months) {
           
         </tbody>
 
-       <?php endforeach; ?>
+       <?php endif; endforeach; ?>
         <!-- TOTAL ROW -->
         <tfoot>
             <tr>
@@ -271,16 +299,20 @@ switch ($months) {
 
     <!-- FOOTER SIGNATURE -->
     <div class="row m-0">
-        <div class="col-4 footer-box">
+        <div class="col-3 footer-box">
             Prepared By
             <div class="sign-title">Accountant</div>
         </div>
-        <div class="col-4 footer-box">
+        <div class="col-3 footer-box">
             Checked By
             <div class="sign-title">Accounts Officer</div>
         </div>
-        <div class="col-4 footer-box">
+        <div class="col-3 footer-box">
             Approved By
+            <div class="sign-title">Branch Manager</div>
+        </div>
+        <div class="col-3 footer-box">
+            Authorized Sign
             <div class="sign-title">Chairman & Managing Director</div>
         </div>
     </div>

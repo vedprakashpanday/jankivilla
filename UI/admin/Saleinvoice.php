@@ -249,9 +249,21 @@ if (isset($_POST['btnsubmit'])) {
     }
     $admission=0;
     $resgistration=0;
-    if(!empty($_POST['admission']&& (empty($_POST['enrollment'])) && (empty($_POST['allotment'])))){
-      $admission=$payamount;
+    if(!empty($_POST['admission']&& (empty($_POST['enrollment'])) && (empty($_POST['allotment']))))
+      {
+        if($payamount<=1100)
+          {
+          
+          $admission=$payamount;
       $payamount = 0;
+        }
+        else {
+
+        echo "<script>alert('Maximum Rs.1100 required.Please Select Enrollement for amount<=16100,allotment for amount>16100'); window.history.back();</script>";
+          return;
+          
+        }
+
 
   //     echo "<pre>";
   //     print_r("admission available <br>");
@@ -262,10 +274,18 @@ if (isset($_POST['btnsubmit'])) {
   // die();
     }
     else if(!empty($_POST['enrollment'])&&!empty($_POST['admission'])&&empty($_POST['allotment'])){
-      $resgistration=15000;      
-      $admission=$payamount-$resgistration;  
+      if($payamount>1100 && $payamount<=16100){
+      $resgistration=$payamount-1100;      
+      $admission=1100;  
        $payamount = 0;
        $flag=1;
+      }
+      else {
+
+        echo "<script>alert('Maximum Rs.16100 required for enrollment including Rs.1100 admission charge.Please Select Allotment for amount>16100'); window.history.back();</script>";
+          exit;
+          
+        } 
   //     echo "<pre>";
   //      print_r("admission available && enrollment also<br>");
   // print_r($_POST['admission']);
@@ -279,10 +299,18 @@ if (isset($_POST['btnsubmit'])) {
   // die();
     }
     else if(!empty($_POST['enrollment'])&&!empty($_POST['admission'])&&!empty($_POST['allotment'])){
+      if($payamount>16100){
       $resgistration=15000;
       $admission=1100;
-      $payamount= $payamount-$resgistration-$admission;  
+      $payamount= $payamount-($resgistration+$admission);  
       $flag=2;
+      }
+      else {
+
+        echo "<script>alert('Minimum Rs.16100 required for allotment including Rs.1100 admission and Rs.15000 enrollment charge.'); window.history.back();</script>";
+          exit;
+          
+        } 
   //     echo "<pre>";
   // print_r($_POST['admission'])."<br>";
   // print_r($_POST['enrollment'])."<br>";
@@ -734,6 +762,19 @@ if (isset($_POST['btnsubmit'])) {
       ]);
     }
 
+    $update_sqfeet = "SELECT Squarefeet from products WHERE ProductName = :product_name AND product_type_id IN (1, 2)";
+    $update_sq_stmt=$pdo->prepare($update_sqfeet);
+     $update_sq_stmt->execute([
+      ':product_name' => $productname
+    ]);
+
+    $row=$update_sq_stmt->fetch(PDO::FETCH_ASSOC);
+
+    $leftsqft=$row['Squarefeet']-$_POST['squarefeet'];
+
+
+if($leftsqft==0)
+  {
     // Update the products table status to 'booked'
     $update_sql = "UPDATE products SET Status = 'booked' WHERE ProductName = :product_name AND product_type_id IN (1, 2)";
     $update_stmt = $pdo->prepare($update_sql);
@@ -796,7 +837,72 @@ if (isset($_POST['btnsubmit'])) {
     } else {
       echo "<script>alert('Record inserted successfully and invoice emailed to customer and admin!');</script>";
     }
+  }
+  else
+    {
+        $update_sql = "UPDATE products SET Squarefeet = :sq WHERE ProductName = :product_name AND product_type_id IN (1, 2)";
+    $update_stmt = $pdo->prepare($update_sql);
+    $update_stmt->execute([
+      ':sq' => $leftsqft,
+      ':product_name' => $productname
+    ]);
 
+    // Prepare data for email
+    $email_data = [
+      'voucher_number'        => $voucher_number,
+      'bill_prepared_by_id'    => $employee_id,
+      'bill_prepared_by_name'  => $employee_name,
+      'member_id'             => $_POST['member_id'],
+      'refer_name'            => $_POST['refer_name'],
+      'date'                  => $_POST['date'],
+      'customer_name'         => $_POST['customer_name'],
+      'customer_mobile'       => $_POST['customer_mobile'],
+      'customer_email'        => $_POST['customer_email'],
+      'product_type'          => $_POST['product_type'],
+      'product_name'          => $_POST['product_name'],
+      'project_name'          => $project_name,
+      'pass_book_no'          => $pass_book_no,
+      'extent_sqft'           => $extent_sqft,
+      'squarefeet'            => $leftsqft,
+      'rate'                  => $_POST['rate'],
+      'final_rate'            => $final_rate,
+      'quantity'              => $_POST['quantity'],
+      'gross_amount'          => $_POST['gross_amount'],
+      'discount_percent'      => $discount_percent,
+      'discount_rs'           => $discount_rs,
+      ':corner_charge' => ($_POST['corner_charge'] === '' ? '0' : $_POST['corner_charge']),
+      'prem_charge'           => $prem_charge,
+      'other_charge'          => $other_charge,
+      'net_amount'            => $net_amount,
+      'payment_mode'          => $payment_mode,
+      'payamount'             => $payamount,
+      'due_amount'            => $due_amount,
+      'date_of_registry'      => $date_of_registry,
+      'deed_no'               => $deed_no,
+      'link_deed_no'          => $link_deed_no,
+      'dispatch_date'         => $dispatch_date,
+      'agreement_no'          => $agreement_no,
+      'agreement_date'        => $agreement_date,
+      'khata_no'              => $khata_no,
+      'khesra_no'             => $khesra_no,
+      'rakwa'                 => $rakwa,
+      'cheque_number'         => $payment_mode == 'cheque' ? $_POST['cheque_number'] : null,
+      'bank_name'             => $payment_mode == 'cheque' ? $_POST['bank_name'] : null,
+      'cheque_date'           => $payment_mode == 'cheque' ? $_POST['cheque_date'] : null,
+      'utr_number'            => $payment_mode == 'bank_transfer' ? $utr_number : null,
+      'neft_payment'          => $payment_mode == 'bank_transfer' ? $neft_payment : null,
+      'rtgs_payment'          => $payment_mode == 'bank_transfer' ? $rtgs_payment : null,
+      'remarks'               => $remarks,
+      'emi_month'             => $emi_month
+    ];
+
+    // Send invoice email
+    if (!sendInvoiceEmail($pdo, $invoice_id, $_POST['customer_email'], $_POST['customer_name'], $email_data)) {
+      echo "<script>alert('Record inserted successfully, but failed to send invoice email to one or more recipients.');</script>";
+    } else {
+      echo "<script>alert('Record inserted successfully and invoice emailed to customer and admin!');</script>";
+    }
+    }
     // Redirect to success message
     echo "<script>
                     window.location.href='Saleinvoice.php?invoice_id=" . urlencode($invoice_id) . "&member_id=" . urlencode($memberid) . "';
@@ -1461,29 +1567,11 @@ if (isset($_POST['btnsubmit'])) {
 
                       <!-- Refer By Section -->
                       <h3>Refer By</h3>
-                      <div class="form-row">
-                        <div class="form-group col-md-6">
-                          <label>Member ID:</label>
-                          <input type="text" class="form-control" name="member_id" id="member_id" placeholder="Enter Member ID" required>
-                          <div class="dropdown-list" id="dropdown"></div>
-                        </div>
-                        <div class="form-group col-md-6">
-                          <label>Name:</label>
-                          <input type="text" class="form-control" name="refer_name" id="m_name" readonly>
-                        </div>
-                        <div class="form-group col-md-6">
-                          <label>Mobile Number:</label>
-                          <input type="text" class="form-control" name="refer_mobile" id="m_num" readonly>
-                        </div>
-                        <div class="form-group col-md-6">
-                          <label>Email ID:</label>
-                          <input type="email" class="form-control" name="refer_email" id="m_email" readonly>
-                        </div>
-                      </div>
+                     
 
                       <!-- Customer ID Field with Search Dropdown -->
                       <div class="form-group col-md-6 search-container">
-                        <label>Customer/Pass Book No:</label>
+                        <label>Customer name:</label>
                         <input type="text" class="form-control" name="customer_id" id="customer_id"
                           placeholder="Type ID or Name to search..." autocomplete="off" required>
                         <div class="dropdown-list" id="customer_dropdown"></div>
@@ -1527,7 +1615,7 @@ if (isset($_POST['btnsubmit'])) {
                             placeholder="Enter Nominee Aadhar" readonly>
                         </div>
                         <div class="form-group col-md-6">
-                          <label>Address:</label>
+                          <label>Customer Address:</label>
                           <textarea class="form-control" name="address" rows="3" id="address"
                             placeholder="Enter Address" readonly></textarea>
                         </div>
@@ -1540,6 +1628,25 @@ if (isset($_POST['btnsubmit'])) {
                           <label>District:</label>
                           <input type="text" class="form-control" name="district" id="district"
                             placeholder="Enter District" readonly>
+                        </div>
+                      </div>
+                       <div class="form-row">
+                        <div class="form-group col-md-6">
+                          <label>Member ID:</label>
+                          <input type="text" class="form-control" name="member_id" id="member_id" placeholder="Enter Member ID" required>
+                          <div class="dropdown-list" id="dropdown"></div>
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label>Name:</label>
+                          <input type="text" class="form-control" name="refer_name" id="m_name" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label>Mobile Number:</label>
+                          <input type="text" class="form-control" name="refer_mobile" id="m_num" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label>Email ID:</label>
+                          <input type="email" class="form-control" name="refer_email" id="m_email" readonly>
                         </div>
                       </div>
 
@@ -1562,10 +1669,15 @@ if (isset($_POST['btnsubmit'])) {
                         </div>
                         <div class="form-group col-md-6">
                           <label>Square Feet:</label>
-                          <select class="form-control" name="squarefeet" id="squarefeet">
+                          <!-- <select class="form-control" name="squarefeet" id="squarefeet">
                             <option value="">Select Square Feet</option>
-                          </select>
+                          </select> -->
+                          <input type="hidden" class="form-control" name="squarefeet1" id="squarefeet1" >
+                          <input type="text" class="form-control" name="squarefeet" id="squarefeet" placeholder="Enter SquareFeeet">
+                          <span id="sq_msg" class="text-danger"></span>
                         </div>
+                        
+
                         <div class="form-group col-md-6">
                           <label>Rate:</label>
                           <input type="text" class="form-control" name="rate" id="rate" placeholder="Enter Rate">
@@ -1594,10 +1706,10 @@ if (isset($_POST['btnsubmit'])) {
                           <label>Project Name:</label>
                           <input type="text" class="form-control" name="project_name" id="project_name" placeholder="Enter Project Name">
                         </div>
-                        <div class="form-group col-md-6">
+                        <!-- <div class="form-group col-md-6">
                           <label>Pass Book No.:</label>
                           <input type="text" class="form-control" name="pass_book_no" id="pass_book_no" placeholder="Enter Pass Book No." value="" readonly>
-                        </div>
+                        </div> -->
                         <div class="form-group col-md-6">
                           <label>Extent in Sqft.:</label>
                           <input type="text" class="form-control" name="extent_sqft" id="extent_sqft" placeholder="Enter Extent in Sqft.">
@@ -1629,6 +1741,7 @@ if (isset($_POST['btnsubmit'])) {
 
                         <input type="hidden" id="total_area" name="total_area">
                       </div>
+                      <!-- Product Details Section end here -->
 
                       <!-- Payment Details -->
                       <h3>Payment Details</h3>
@@ -1720,8 +1833,13 @@ if (isset($_POST['btnsubmit'])) {
                           <label>Admission Receipt Number:</label>
                           <input type="text" class="form-control " name="adm_receipt" id="adm_receipt" placeholder="Enter Admission Receipt" >
                         </div>
-                      </div>
 
+                         <div class="form-group col-md-6 d-none pbn">
+                          <label>PassBook Number:</label>
+                          <input type="text" class="form-control " name="pass_book_no" id="pass_book_no" placeholder="Enter PassBook Number" >
+                        </div>
+                      </div>
+                        <!-- Payment Details end here -->
                       <!-- Payment Mode -->
                       <h3>Payment Mode</h3>
                       <div class="form-row">
@@ -1952,6 +2070,23 @@ if (isset($_POST['btnsubmit'])) {
       // console.log("entered");
       
       $('.emib').toggleClass('d-none');
+     
+
+       const $wrapper = $('.pbn');
+    const $input = $('#pass_book_no');
+
+    if ($wrapper.hasClass('d-none')) {
+        // SHOW field
+        $wrapper.removeClass('d-none');
+        $input.prop('required', true);
+        $input.prop('disabled', false);
+    } else {
+        // HIDE field
+        $wrapper.addClass('d-none');
+        $input.prop('required', false);
+        $input.prop('disabled', true);
+        $input.val('');
+    }
     });
 
   $(document).on('click', "#admission", function () {
@@ -2042,6 +2177,40 @@ if (isset($_POST['btnsubmit'])) {
     };
     //]]>
   </script>
+
+<script>
+$(document).ready(function () {
+
+    $('#squarefeet').on('input', function () {
+        let sq = parseFloat($('#squarefeet').val()) || 0;
+        let sq1 = parseFloat($('#squarefeet1').val()) || 0;
+
+        if (sq > sq1) {
+            $('#sq_msg').text('Square Feet is exceeding limit!');
+            $('#submitBtn').prop('disabled', true);
+        } else {
+            $('#sq_msg').text('');
+            $('#submitBtn').prop('disabled', false);
+        }
+    });
+
+    // extra safety: form submit pe bhi check
+    $('form').on('submit', function () {
+        let sq = parseFloat($('#squarefeet').val()) || 0;
+        let sq1 = parseFloat($('#squarefeet1').val()) || 0;
+
+        if (sq > sq1) {
+            $('#sq_msg').text('Square Feet is exceeding limit!');
+            return false; // form submit stop
+        }
+    });
+
+});
+</script>
+
+
+
+
   <!-- //here is the php all script// -->
   <script>
     const memberIdInput = document.getElementById('member_id');
@@ -2204,6 +2373,7 @@ if (isset($_POST['btnsubmit'])) {
         .then(response => response.json())
         .then(data => {
           document.getElementById('squarefeet').value = data.Squarefeet;
+          document.getElementById('squarefeet1').value = data.Squarefeet;
           document.getElementById('point').value = data.Points;
           document.getElementById('quantity').value = data.Quantity;
           document.getElementById('dimension').value = data.dimension;
@@ -2342,7 +2512,7 @@ calculateGrossAmount();
 
     // Search function
     function searchCustomers(term) {
-      fetch('search_customers.php', {
+      fetch('search_customers.php', { 
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -2417,12 +2587,12 @@ calculateGrossAmount();
       document.getElementById('state').value = element.getAttribute('data-state');
       document.getElementById('district').value = element.getAttribute('data-district');
 
-      if(!element.getAttribute('data-pass') || element.getAttribute('data-pass') === 'null'){
-        document.getElementById('pass_book_no').removeAttribute('readonly');
-      } else {
-        document.getElementById('pass_book_no').value = element.getAttribute('data-pass');
-        document.getElementById('pass_book_no').addAttribute('readonly');
-      }
+      // if(!element.getAttribute('data-pass') || element.getAttribute('data-pass') === 'null'){
+      //   document.getElementById('pass_book_no').removeAttribute('readonly');
+      // } else {
+      //   document.getElementById('pass_book_no').value = element.getAttribute('data-pass');
+      //   document.getElementById('pass_book_no').addAttribute('readonly');
+      // }
       // Hide dropdown 
       customerDropdown.classList.remove('show');
     }

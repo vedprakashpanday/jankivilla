@@ -26,6 +26,31 @@ function jsonToTextWithLabel($json)
     }, $arr));
 }
 
+function jsonToText2($json)
+{
+    $data = json_decode($json, true);
+    if (!is_array($data)) return '';
+
+    // Measurement order + labels
+    $units = [
+        'bigha'   => 'Bigha',
+        'kattha'  => 'Kattha',
+        'dhoor'    => 'Dhoor',
+        'kanma'   => 'Kanma',
+        'dismil'  => 'Dismil'
+    ];
+
+    $output = [];
+
+    foreach ($units as $key => $label) {
+        if (isset($data[$key]) && is_numeric($data[$key]) && $data[$key] > 0) {
+            $output[] = $data[$key] . ' ' . $label;
+        }
+    }
+
+    return htmlspecialchars(implode(' ', $output));
+}
+
 // Fetch land owner data
 $stmt = $pdo->prepare("SELECT * FROM land_owner_payments WHERE id = ?");
 $stmt->execute([$landid]);
@@ -338,6 +363,17 @@ $running_balance = 0;
                 </div>
             </div>
 
+             <div class="form-row-multi">
+                <div class="form-group">
+                    <span class="form-label">Khata Number</span>
+                    <span class="form-value"><?php echo jsonToText($data['khata'] ?? ''); ?></span>
+                </div>
+                <div class="form-group">
+                    <span class="form-label">Jamabandi Number</span>
+                    <span class="form-value"><?php echo htmlspecialchars($data['jamabandi'] ?? ''); ?></span>
+                </div>
+            </div>
+
             <div class="form-row-multi">
                 <div class="form-group">
                     <span class="form-label">Kheshra No.</span>
@@ -345,7 +381,7 @@ $running_balance = 0;
                 </div>
                 <div class="form-group">
                     <span class="form-label">Rakwa</span>
-                    <span class="form-value"><?= jsonToText($data['rakuwa']) ?></span>
+                    <span class="form-value"><?= jsonToText2($data['rakuwa']) ?></span>
                 </div>
             </div>
 
@@ -353,7 +389,7 @@ $running_balance = 0;
                 <div class="form-group">
                     <span class="form-label">Rate</span>
                     <span class="form-value">
-    <?= jsonToTextWithLabel($data['rate_per_katha']) ?>
+    <?=  htmlspecialchars($data['rate_per_katha']) ?>
 </span>
                 </div>
                 <div class="form-group">

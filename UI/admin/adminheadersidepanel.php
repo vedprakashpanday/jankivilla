@@ -53,10 +53,17 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link franchiseSidebar franchiseSidebar2" href="interested_customer.php" style="color:#fff ! important;">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Interested Customer</span>
+                </a>
+            </li>
+
              <li class="nav-item ">
                 <a class="nav-link franchiseSidebar" data-toggle="collapse" href="#memadm" aria-expanded="false" aria-controls="memadm">
                     <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title" style="color:white">Administrative Management</span>
+                    <span class="menu-title" style="color:white">Employee Management</span>
                     <i class="menu-arrow"></i>
                 </a>
                 <div class="collapse " id="memadm">
@@ -66,7 +73,7 @@
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="adm_salary.php"> Add Employee Salary</a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="add_advance.php"> Add Employee Advance</a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="calc_salary.php"> Calculate Employee Salary</a></li>
-                       
+                       <li class="nav-item franchiseSidebar"><a class="nav-link" href="repayment_emp.php"> Employee Repayment</a></li>
                     </ul>
                 </div>
             </li>
@@ -295,9 +302,10 @@
                     <ul class="nav flex-column sub-menu ">
 
                         <!-- <li class="nav-item franchiseSidebar"><a class="nav-link" href="welcomeletter.php">Welcome Letter</a></li>
+                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="kycdetails.php">Update KYC </a></li> -->
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="personaldetails.php">Personal Profile</a></li>
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="BankDetail.php">Bank Details</a></li>
-                        <li class="nav-item franchiseSidebar"><a class="nav-link" href="kycdetails.php">Update KYC </a></li> -->
+                        
                         <li class="nav-item franchiseSidebar"><a class="nav-link" href="changepassword.php">Change Password</a></li>
                     </ul>
                 </div>

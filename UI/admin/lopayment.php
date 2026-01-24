@@ -941,7 +941,7 @@ if (isset($_GET['id'])) {
 <td><?= htmlspecialchars($row['thana_no'] ?? '') ?></td>
 <td><?= jsonToText($row['khesra_no']) ?></td>
 <td><?= jsonToText($row['rakuwa']) ?></td>
-<td><?= jsonToText($row['rate_per_katha']) ?></td>
+<td><?= htmlspecialchars($row['rate_per_katha']) ?></td>
 <td><?= htmlspecialchars($row['total_land_value'] ?? '') ?></td>
 
                                                                 <td>
@@ -954,7 +954,7 @@ if (isset($_GET['id'])) {
                                                                         <input type="hidden" name="delete_id" value="<?php echo $row['id']; ?>">
                                                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                                                     </form>
-                                                                    <a href="landreceipt.php?landid=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Print</a>
+                                                                    <!-- <a href="landreceipt.php?landid=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Print</a> -->
                                                                 </td>
                                                             </tr>
                                                         <?php endforeach; ?>

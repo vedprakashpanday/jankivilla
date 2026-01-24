@@ -1,6 +1,6 @@
 ﻿<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 session_start();
 include_once "connectdb.php";
 
@@ -27,6 +27,8 @@ if (isset($_POST['btnsubmit'])) {
     $nationality    = trim($_POST['nationality']);
     $dob = !empty($_POST['Dob']) ? $_POST['Dob'] : null;
     $proofType     = $_POST['proofType'];
+    $bloodgroup     = $_POST['bloodgroup'];
+     // 1. Get existing designations JSON
 
     $date_of_anniversary = !empty($_POST['date_of_anniversary'])
         ? $_POST['date_of_anniversary']
@@ -82,14 +84,31 @@ if (isset($_POST['btnsubmit'])) {
     $kyc = $pdo->prepare("INSERT INTO tbl_kyc (sponsor_id, address_proof_file) VALUES (?, ?)");
     $kyc->execute([$m_id, $all_files]);
 
+     $sql = "INSERT INTO tbl_bank_details (
+            member_id,account_name,account_no,bank_name,branch,ifsc_code,created_at
+        ) VALUES (
+            :id,:acc_name,:acc_no,:b_name,:br,:ifsc,now()
+        )";
+
+        $stmt = $pdo->prepare($sql);
+
+     $stmt->execute([
+     'id'=>$m_id,
+     'acc_name'=>$_POST['ach_name']??null,
+     'acc_no'=>$_POST['ba_number']??null,
+     'b_name'=>$_POST['b_name']??null,
+     'br'=>$_POST['br_name']??null,
+     'ifsc'=>$_POST['ifsc']??null
+     ]);
+
     // Insert into tbl_regist
     $sql = "INSERT INTO tbl_regist 
             (sponsor_id, s_name, m_name, parents_name, so_do_name, gender, designation, 
              date_of_birth, date_of_anniversary,m_num, m_email, m_password, date_time, address, city, 
              aadhar_number, pan_number, mem_sid, alt_no, native_place, pincode, 
-             marital_status, nationality,designations,proof_type)
+             marital_status, nationality,designations,proof_type, blood_group)
             VALUES 
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -117,7 +136,8 @@ if (isset($_POST['btnsubmit'])) {
         $marital_status,
         $nationality,
         $newJson,
-        $proofType
+        $proofType,
+        $bloodgroup
     ]);
 
     // Insert into tbl_hire
@@ -148,7 +168,7 @@ if (isset($_GET['get_designations'])) {
 
     $stmt = $pdo->prepare("SELECT designation FROM tbl_regist WHERE mem_sid = ?");
     $stmt->execute([$sponsor_id]);
-    $sponsor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sponsor = $stmt->fetch(PDO::FETCH_ASSOC); 
 
     if (!$sponsor) {
         echo json_encode(['options' => '<option value="">-- Select Designation --</option>
@@ -350,6 +370,23 @@ if (isset($_GET['get_designations'])) {
                                                             <b>Name in Full</b>
                                                             <input name="mem_name" type="text" class="form-control" placeholder="Enter Full Name" required>
                                                         </div>
+
+                                                          <div class="col-md-4">
+    
+                                                            <b>Select Blood Group</b>
+                                                            <select class="form-control" id="bloodgroup" name="bloodgroup">
+                                                                 <option value="">-- Select Blood Group --</option>
+                                                                            <option value="A+">A+</option>
+                                                                            <option value="A-">A-</option>
+                                                                            <option value="B+">B+</option>
+                                                                            <option value="B-">B-</option>
+                                                                            <option value="AB+">AB+</option>
+                                                                            <option value="AB-">AB-</option>
+                                                                            <option value="O+">O+</option>
+                                                                            <option value="O-">O-</option>
+                                                            </select>
+                                                        </div>
+
                                                         <div class="col-md-4">
                                                             <b>S/O, D/O, Spouse's Name</b>
                                                             <input name="so_do_name" type="text" class="form-control" placeholder="Father/Spouse Name">
@@ -474,6 +511,60 @@ if (isset($_GET['get_designations'])) {
                                                         <div style="display:none">
                                                             <input type="text" name="d_time" value="<?php echo date('Y-m-d H:i:s'); ?>">
                                                         </div>
+
+
+                                                          <!-- ==================== Bank DETAILS  start==================== -->
+ <div class="col-md-12">
+                                                   
+                                                        <h2>Bank Details</h2>
+                                                        <hr>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <b>Account Holder Name:</b>
+                                                                <i><input name="ach_name" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+
+
+
+
+                                                            <div class="col-md-4">
+                                                                <b> Bank A/c No:</b>
+
+                                                                <i> <input name="ba_number" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <b>Bank Name:</b>
+
+                                                                <i> <input name="b_name" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <b>
+                                                                    Branch Name:
+                                                                </b>
+                                                                <i>
+                                                                    <input name="br_name" type="text" id="" class="form-control" style="font-weight:bold;">
+                                                                </i>
+                                                            </div>
+
+                                                            <div class="col-md-4">
+                                                                <b>
+                                                                    IFSC Code:</b>
+                                                                <i><input name="ifsc" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        
+
+                                                    </div>
+                                              
+
+
+<!-- ==================== Bank DETAILS end ==================== -->
                                                     </div>
                                                     <!-- Submit -->
                                                     <div class="row mt-4">

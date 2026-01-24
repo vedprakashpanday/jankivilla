@@ -1,115 +1,64 @@
   <?php
  error_reporting(E_ALL);
-ini_set('display_errors', 1);;
+ini_set('display_errors', 1);
 ob_start(); // Start output buffering to capture any unintended output
 include_once 'connectdb.php'; // Assuming this file contains your PDO connection
 
 // Get parameters from URL
-$invoice_id = isset($_GET['invoice_id']) ? $_GET['invoice_id'] : '';
-$member_id = isset($_GET['member_id']) ? $_GET['member_id'] : '';
-$row_id = isset($_GET['row_id']) ? $_GET['row_id'] : '';
+// $invoice_id = isset($_GET['invoice_id']) ? $_GET['invoice_id'] : '';
+// $member_id = isset($_GET['member_id']) ? $_GET['member_id'] : '';
+$row_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 
 
 $stmt = $pdo->prepare("
-    SELECT cashback
-    FROM receiveallpayment
-    WHERE id < :row_id
-    ORDER BY id DESC
-    LIMIT 1
-");
+    SELECT *
+    FROM apply_cashback
+    WHERE id = :row_id    
+    ");
 
 $stmt->execute(['row_id' => $row_id]);
 
 $previous_row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
-$admission = isset($_GET['admission']) ? $_GET['admission'] : '';
-$enroll = isset($_GET['enroll']) ? $_GET['enroll'] : '';
-$amount = isset($_GET['pay']) ? $_GET['pay'] : '';
 
-if($admission>0 && $enroll=='null'&& $amount=='null')
-{
-    $payAmount = $admission;
-}
-if($enroll!='null'&& $amount!='null')
-{
-    $payAmount = $enroll + $amount;
-    //$payAmount = $enroll + $amount+$previous_row['cashback'];
-}
+$stmt123 = $pdo->prepare("
+    SELECT address
+    FROM customer_details
+    WHERE customer_id = :row_id    
+    ");
 
-try {
-    // Fetch data from receiveallpayment and tbl_customeramount
-    $sql = "
-        SELECT 
-            rap.*,
-            tc.customer_name AS tc_customer_name,
-            tc.customer_address AS address,
-            tc.productname AS tc_productname,
-            tc.net_amount AS tc_net_amount,
-            tc.payamount AS tc_payamount,
-            tc.due_amount AS tc_due_amount            
-        FROM 
-            receiveallpayment rap
-        LEFT JOIN 
-            tbl_customeramount tc 
-            ON rap.invoice_id = tc.invoice_id 
-            AND rap.member_id = tc.member_id
-        WHERE 
-            rap.invoice_id = :invoice_id 
-            AND rap.member_id = :member_id
-            AND rap.id = :row_id
-    ";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        ':invoice_id' => $invoice_id,
-        ':member_id' => $member_id,
-        ':row_id' => $row_id
-    ]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt123->execute(['row_id' => $previous_row['customer_id']]);
 
-    // Assign variables for display
-    if ($row) {
-        $customerName = $row['tc_customer_name'] ?? $row['customer_name'];
-        $customerAddress = $row['address'] ?? '';
-        $invoiceDate = $row['created_date']; // Payment date
-        $invoiceNo = $row['invoice_id'];
-        if(!empty($row['adm_receipt']))
-        {
-        $receiptno = $row['adm_receipt'];
-         
-        }
+$rower = $stmt123->fetch(PDO::FETCH_ASSOC);
 
-         if(!empty($row['receipt_no']))
-        {
-        $receiptno = $row['receipt_no'];
-        
-        }
-        
-        $productName = $row['productname'] ?? $row['tc_productname'];
+$stmt1234 = $pdo->prepare("
+    SELECT invoice_id,receipt_no
+    FROM receiveallpayment
+    WHERE customer_id = :row_id and cashback = :cb    
+    ");
 
-        $totalAmount = $row['tc_net_amount'] ?? $row['net_amount']; // Total from tbl_customeramount
-        
-        // $duesAmount = $row['due_amount']; // Remaining due after this payment
-        $paymentMode = $row['payment_mode'];
+$stmt1234->execute(
+    [
+    'row_id' => $previous_row['customer_id'],
+    'cb'=>$previous_row['cashback_amount']
+]);
 
-        // Additional payment details
-        $chequeNumber = $row['cheque_number'] ?? '';
-        $bankName = $row['bank_name'] ?? '';
-        $chequeDate = $row['cheque_date'] ?? '';
-        $utrNumber = $row['utr_number'] ?? '';
-        $neft_payment = $row['neft_payment'] ?? '';
-        $rtgs_payment = $row['rtgs_payment'] ?? '';
-        $bill_prepared_by_name = $row['bill_prepared_by_name'] ?? '';
-        $voucher_number = $row['voucher_number'] ?? '';
-        $cashback=$row['cashback'] ?? '';
-        $amountWords = numberToWords($payAmount);
-    } else {
-        $error = "No payment record found for the given invoice ID, member ID, and row ID";
-    }
-} catch (PDOException $e) {
-    $error = "Query failed: " . $e->getMessage();
-}
+$rower1 = $stmt1234->fetch(PDO::FETCH_ASSOC);
+
+// echo "<pre>";
+// print_r($previous_row);
+// print_r($rower);
+// print_r($rower1);
+// echo "</pre>";
+// exit();
+$customerName=$previous_row['customer_name'];
+$invoiceDate = date('d-m-Y', strtotime($previous_row['created_at']));
+$customerAddress =$rower['address'];
+$invoiceNo=$rower1['invoice_id'];
+$receiptno=$rower1['receipt_no'];
+
 
 // Function to convert number to words (unchanged)
 function numberToWords($number)
@@ -207,19 +156,7 @@ function numberToWords($number)
 }
 
 
-$totalSql = "
-    SELECT SUM(payamount) AS total_paid,SUM(enrollment_charge) AS enroll
-    FROM receiveallpayment
-    WHERE invoice_id = :invoice_id AND member_id = :member_id
-";
-$totalStmt = $pdo->prepare($totalSql);
-$totalStmt->execute([ 
-    ':invoice_id' => $invoice_id,
-    ':member_id' => $member_id
-]);
-$totalRow = $totalStmt->fetch(PDO::FETCH_ASSOC);
-$totalPaidAmount = $totalRow['total_paid']+$totalRow['enroll']+$previous_row['cashback'] ?? 0;
-$duesAmount = $totalAmount - ($totalPaidAmount+$previous_row['cashback']);
+
 
 ?>
 
@@ -382,16 +319,16 @@ $duesAmount = $totalAmount - ($totalPaidAmount+$previous_row['cashback']);
                             <tr>
                                 <th style="width: 10%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">SR NO</th>
                                 <th style="width: 50%; text-align: left; border-bottom: thin solid #000; padding: 0.5mm;">DESCRIPTION</th>
-                                <th style="width: 20%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">Mode</th>
+                                <!-- <th style="width: 20%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">Mode</th> -->
                                 <th style="width: 20%; text-align: right; border-bottom: thin solid #000; padding: 0.5mm;">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td style="text-align: center; padding: 0.5mm;">1</td>
-                                <td style="text-align: left; padding: 0.5mm;"><?php echo htmlspecialchars($productName); ?> Payment</td>
-                                <td style="text-align: center; padding: 0.5mm;"><?php echo htmlspecialchars($paymentMode); ?></td>
-                                <td style="text-align: right; padding: 0.5mm;"><?php echo htmlspecialchars($payAmount); ?></td>
+                                <td style="text-align: left; padding: 0.5mm;"><?php echo htmlspecialchars($previous_row['cashback_name']); ?> Payment</td>
+                                
+                                <td style="text-align: right; padding: 0.5mm;"><?php echo htmlspecialchars($previous_row['cashback_amount']); ?></td>
                             </tr>
                         </tbody>
                     </table>
@@ -399,49 +336,12 @@ $duesAmount = $totalAmount - ($totalPaidAmount+$previous_row['cashback']);
 
                 <div style="background-color:#fffbd5;">
                     <table>
-                        <tr>
-                            <td width="50%"><b>Total:</b></td>
-                            <td width="50%"><b><?php echo htmlspecialchars($totalAmount); ?></b></td>
-                        </tr>
+                      
                         <tr>
                             <td><b>Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($payAmount); ?></b></td>
+                            <td><b><?php echo htmlspecialchars($previous_row['cashback_amount']); ?></b></td>
                         </tr>
-                        <tr>
-                            <td><b>Total Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($totalPaidAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Due:</b></td>
-                            <td><b><?php echo htmlspecialchars($duesAmount); ?></b></td>
-                        </tr>
-                        <?php if ($paymentMode === 'cheque'): ?>
-                            <tr>
-                                <td><b>Cheque No:</b></td>
-                                <td><b><?php echo htmlspecialchars($chequeNumber); ?></b></td>
-                            </tr>
-                            <tr>
-                                <td><b>Bank:</b></td>
-                                <td><b><?php echo htmlspecialchars($bankName); ?></b></td>
-                            </tr>
-                        <?php elseif ($paymentMode === 'bank_transfer'): ?>
-                            <?php if ($neft_payment): ?>
-                                <tr>
-                                    <td><b>NEFT Reference Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($neft_payment); ?></b></td>
-                                </tr>
-                            <?php elseif ($rtgs_payment): ?>
-                                <tr>
-                                    <td><b>RTGS Reference Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($rtgs_payment); ?></b></td>
-                                </tr>
-                            <?php elseif ($paymentMode === 'bank_transfer'): ?>
-                                <tr>
-                                    <td><b>UTR Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($utrNumber); ?></b></td>
-                                </tr>
-                            <?php endif; ?>
-                        <?php endif; ?>
+                       
                     </table>
                 </div>
 

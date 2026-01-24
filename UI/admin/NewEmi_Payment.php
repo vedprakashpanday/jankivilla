@@ -245,7 +245,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
                                             <div class="row">
                                                 <div class="col-md-3 invoice-search-container">
-                                                    <b>Search by Invoice No.</b>
+                                                    <b>Search by PassBook No.</b>
                                                     <input name="invoicesearch" type="text" id="printinvoice"
                                                         class="form-control mt-2"
                                                         placeholder="Type customer name or invoice ID..."
@@ -264,6 +264,10 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                     <tr>
                                                         <th>Customer Name</th>
                                                         <td id="custName"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Passbook No.</th>
+                                                        <td id="passbookNo"></td>
                                                     </tr>
                                                     <tr>
                                                         <th>Product Name</th>
@@ -323,6 +327,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                         <td class='d-flex'>
                                                             <select class="form-control col-3" name="payment_type" id="payment_type"  style="width: 200px;">
                                                                 <option value="">Select Payment Type</option>
+                                                                <option value="admission" id="admld">Admission Charge</option>
                                                                 <option value="enroll" id="enrolld">Enrollment charge</option>
                                                                 <option value="allot">Allotment</option>
                                                                 <!-- <option value="bank_transfer">Bank Transfer</option> -->
@@ -330,6 +335,12 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                         
                                                    
                       
+                                                        </td>
+                                                    </tr>
+                                                      <tr class="payment-row d-none " id="passbookRow">
+                                                        <th>Enter PassBook Number</th>
+                                                        <td>
+                                                            <input type="text" id="passbookshow" name="pass_book_no" class="form-control" style="width: 200px;" placeholder="PassBook Number" value="">
                                                         </td>
                                                     </tr>
 
@@ -655,9 +666,9 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                 invoices.forEach(invoice => {
                     html += `
         <div class="invoice-dropdown-item" data-invoice="${invoice.invoice_id}">
-          <div class="invoice-number">Invoice: ${invoice.invoice_id}</div>
+          <div class="invoice-number">PassBook Number: ${invoice.pass_book_no}</div>
           <div class="customer-info">Customer: ${invoice.customer_name || 'N/A'}</div>
-          <div class="product-info">Product: ${invoice.search_productname || 'N/A'}</div>
+          <div class="product-info">Plot : ${invoice.search_productname || 'N/A'}</div>
           ${invoice.invoice_date ? `<div class="invoice-date">Date: ${invoice.invoice_date}</div>` : ''}
         </div>
       `;
@@ -724,11 +735,19 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
         var type=$('#payment_type').val();
         var enroll_fee=$('#enroll').text();
         var prevPaidfee=$('#prevPaid').text();
-
-        // console.log(type);
+       // var oldpass=$('#passbookNo').text();
+        var passbook=$('#passbookshow').val().trim();
+        //console.log(type);
         // console.log(enroll_fee);
-        // console.log(prevPaidfee);
+        //console.log(passbook);
+        //console.log(oldpass);
         
+        if(type=='allot' && !passbook)
+        {
+            //console.log("entered");
+            
+            $('#passbookRow').removeClass('d-none');
+        }
         
         
         if(type=='allot'&& enroll_fee==0 && prevPaidfee==0)
@@ -1106,7 +1125,8 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
         document.getElementById('searchBtn').addEventListener('click', function() {
             const invoiceId = document.getElementById('printinvoice').value.trim();
-
+            console.log(invoiceId);
+            
             if (!invoiceId) {
                 alert('Please enter an invoice number');
                 return;
@@ -1123,8 +1143,8 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
-                    console.log(data.payments[0]);
+                    // console.log(data);
+                    // console.log(data.payments[0]);
                     
                     
                     hideLoadingOverlay();
@@ -1144,12 +1164,21 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
                     //    console.log(cashBack);
                        
-                      if(data.customer.enrollment_charge != "0.00"){
-                        $("#enrolld").css("display", "none");  
+                      if(data.customer.enrollment_charge != "0.00" ){
+                        $("#enrolld").css("display", "none");                       
                       }
-
+                    //   console.log(admAmount);
+                      
+                      if( data.customer.admission_charge >= "500.00"){
+                    //   console.log("entered");
+                      
+                        $("#admld").css("display", "none"); 
+                      }
+ 
+ 
                     document.getElementById('custName').textContent = data.customer.customer_name || 'N/A';
                     document.getElementById('prodName').textContent = data.customer.productname || 'N/A';
+                    document.getElementById('passbookNo').textContent = data.customer.pass_book_no || 'N/A';
                     document.getElementById('netAmount').textContent = netAmount.toFixed(2);
                     document.getElementById('prevPaid').textContent = payAmount.toFixed(2);
                     document.getElementById('dueAmount').textContent = dueAmount.toFixed(2);
@@ -1254,7 +1283,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                 </div>
             </td>
         `;
-           if(payment.admission_charge==1100)
+           if(payment.admission_charge<=1100)
             {     
         row1.innerHTML = `
             <td>${index + 1}</td>
@@ -1416,6 +1445,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
             const chequeNumber = document.getElementById('cheque_number').value.trim();
             const bankName = document.getElementById('bank_name').value.trim();
             const chequeDate = document.getElementById('cheque_date').value;
+            const passbook = document.getElementById('passbookshow').value.trim();
 
             if (!newPayment || newPayment <= 0) {
                 alert('Please enter a valid payment amount');
@@ -1520,6 +1550,7 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                         formData.append('receipt', receipt);
                         formData.append('due_amount', updatedDue);
                         formData.append('payment_date', paymentDate);
+                        formData.append('passbook', passbook);
                         if (voucherNumber) {
                             formData.append('voucher_number', voucherNumber);
                         }
@@ -1558,10 +1589,10 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
                                         let r = JSON.parse(text);
 
-        console.log("DATA:", r.data);
-        console.log("COUNT:", r.count);
-        console.log("LOOP:", r.loop);
-        console.log("DEBUG FLOW:", r.debug);
+        // console.log("DATA:", r.data);
+        // console.log("COUNT:", r.count);
+        // console.log("LOOP:", r.loop);
+        // console.log("DEBUG FLOW:", r.debug);
 
 
 

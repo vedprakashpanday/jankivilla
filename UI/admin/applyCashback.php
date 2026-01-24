@@ -345,7 +345,7 @@ FROM apply_cashback ac
 INNER JOIN (
     SELECT 
         customer_id COLLATE utf8mb4_general_ci AS customer_id,
-        payamount
+        payamount 
     FROM receiveallpayment
     WHERE cashback > 0
     GROUP BY customer_id

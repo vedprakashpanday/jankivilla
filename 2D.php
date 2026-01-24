@@ -224,11 +224,11 @@
                         <span><a href="index.php" title="Home Page - Amitabh Builders & Developers">Home</a></span>
                       </li>
                       <li><span>Media</span></li>
-                      <li><span>2D</span></li>
+                      <li><span>Phase I</span></li>
                     </ul>
                   </nav>
                 </div>
-                <h2 class="breadcrumb__title">2D Design</h2>
+                <h2 class="breadcrumb__title">Phase I Design</h2>
               </div>
             </div>
           </div>
@@ -272,6 +272,139 @@
     <img src="image/phase2.jpeg" alt="Phase 2 Map"
       style="max-width:100%; height:auto; border:0; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
   </div>
+
+      <!-- Project area start -->
+            <section class="project-section section-space">
+               <div class="custom-container">
+                  <div class="title-box text-center mb-60 wow fadeInLeft" data-wow-delay=".5s">
+                     <span class="section-sub-title">Phase I Project</span>
+                     <h3 class="section-title mt-10 mb-25">Phase I Project Nearby Places</h3>
+                  </div>
+                  <div class="row g-0">
+                     <!-- block -->
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/nh-27.webp" alt="property website,sell plots in darbhanga" title="Residential Plots Near Bus Stand Darbhanga " style="height: 39.9rem; object-fit: fill;">
+                           </figure>
+                           <div class="content">
+                              <h2>0.0 KM</h2>
+                              <h4>NH 27</h4>
+                           </div>
+                        </div>
+                     </div>
+                     <!-- block -->
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".5s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Dharbhanga Airpoart.png" alt="buy commercial space, best commercial real estate company in near darbhanga airport, low price plots near me in darbhanga airport" title="Cheap and Best Commercial Real Estate Company in Near Darbhanga Airport">
+                           </figure>
+                           <div class="content">
+                              <h2>2 KM</h2>
+                              <h4>Dharbhanga Airport</h4>
+                           </div>
+                        </div>
+                     </div>
+                     <!-- block -->
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInDown" data-wow-delay=".5s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Dharbhanga Railway station.png" alt="top 10 real estate company in near kakarghatti railway station, best property consultant near me in kakarghatti railway station" title="Commercial Property for Sale by Owner near me in Kakarghatti Railway Station" style="height: 39.9rem;">
+                           </figure>
+                           <div class="content">
+                              <h2>0.3 KM</h2>
+                              <h4>Kakarghatti Railway station</h4>
+                           </div>
+                        </div>
+                     </div>
+
+                      <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInDown" data-wow-delay=".5s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/darbhanga jn.jpg" alt="top 10 real estate company in near darbhanga railway station, best property consultant near me in darbhanga railway station" title="Commercial Property for Sale by Owner near me in Darbhanga Railway Station" style="height: 39.9rem;">
+                           </figure>
+                           <div class="content">
+                              <h2>6 KM</h2>
+                              <h4>Darbhanga Railway station</h4>
+                           </div>
+                        </div>
+                     </div>
+                     <!-- block -->
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInLeft" data-wow-delay=".5s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Amas-Darbhanga-Expressway.jpg" alt="cheap land in near Aamas Darbhanga ExpressWay, cheap and best land in near Aamas Darbhanga ExpressWay, best property dealer company in Aamas Darbhanga ExpressWay" title="Cheapest Plot in Darbhanga - Commercial Residential Real Estate in Aamas Darbhanga ExpressWay" style="height: 39.9rem; object-fit: fill;">
+                           </figure>
+                           <div class="content">
+                              <h2>0.2 KM</h2>
+                              <h4>Aamas Darbhanga ExpressWay</h4>
+                           </div>
+                        </div>
+                     </div>
+
+                      <!-- block -->
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInLeft" data-wow-delay=".5s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Dharbhanga Bus Stand.png" alt="cheap land in near Delhi Mor Chawk, cheap and best land in near Delhi Mor Chawk, best property dealer company in Delhi Mor Chawk" title="Cheapest Plot in Darbhanga - Commercial Residential Real Estate in A Delhi Mor Chawk" >
+                           </figure>
+                           <div class="content">
+                              <h2>4 KM</h2>
+                              <h4>Delhi Mor Chawk</h4>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/LNMU.webp" alt="commercial real estate company in near LNMU, large commercial real estate companies in LNMU, business and real estate for sale in LNMU" title="Large Commercial Real Estate Companies in LNMU" style="height: 39.9rem; object-fit: fill;">
+                           </figure>
+                           <div class="content">
+                              <h2>7.0 KM</h2>
+                              <h4>LNMU</h4>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/civilcourt.webp" alt="proerty management companies in darbhanga, commercial property management near me in near Dharbhanga Civil Court, land and commercial property for sale near Dharbhanga Civil Court darbhanga " title="Property Management Company Near Dharbhanga Civil Court Darbhanga" style="height: 39.9rem; object-fit: fill;">
+                           </figure>
+                           <div class="content">
+                              <h2>10.0 KM</h2>
+                              <h4>Dharbhanga Civil Court</h4>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Darbhanga AIIMS.png" alt="property for sale near me, property to buy near me, buy property in darbhanga" title="Property for Sale Near Me in Darbhanga">
+                           </figure>
+                           <div class="content">
+                              <h2>8 KM</h2>
+                              <h4>Dharbhanga AIIMS</h4>
+                           </div>
+                        </div>
+                     </div>
+                    
+                     <!-- block -->
+                     <!-- <div class="col-xxl-8 col-xxl-8 col-lg-8 wow fadeInLeft" data-wow-delay=".7s">
+                        <div class="project-box-area p-relative">
+                           <figure class="image w-img">
+                              <img src="image/Mithila haat.png" alt="Plots near mithila haat, buy plots close to mithila haat, sit development near mithila haat" title="Property Near Mithila Haat Darbhanga">
+                           </figure>
+                           <div class="content">
+                              <h2>35.0 KM</h2>
+                              <h4>Mithila Haat</h4>
+                           </div>
+                        </div>
+                     </div> -->
+                  </div>
+               </div>
+            </section>
+            <!-- Project area end -->
 
 
 

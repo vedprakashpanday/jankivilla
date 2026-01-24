@@ -28,7 +28,7 @@ if (isset($_POST['btn_login'])) {
 
     if ($row) {
         // Check Aadhaar number in adm_regist using member_id
-        $aadhar_check = $pdo->prepare("SELECT aadhar_no FROM adm_regist WHERE member_id = ?");
+        $aadhar_check = $pdo->prepare("SELECT aadhar_no,designation FROM adm_regist WHERE member_id = ?");
         $aadhar_check->execute([$sponsorid]);
         $aadhar_row = $aadhar_check->fetch(PDO::FETCH_ASSOC);
 
@@ -43,8 +43,9 @@ if (isset($_POST['btn_login'])) {
             $_SESSION['sponsor_pass'] = $row['sponsor_pass'];
             $_SESSION['sponsor_name'] = $row['s_name'];
             $_SESSION['status'] = $row['status'];
+            $_SESSION['designation'] = $aadhar_row['designation'];
 
-            header("Refresh:1; url=UI/Associate/Default.php");
+            header("Refresh:1; url=UI/employee/index.php");
         } else {
             // Aadhaar missing, set session variable to trigger modal
             $_SESSION['kyc_required'] = $sponsorid;

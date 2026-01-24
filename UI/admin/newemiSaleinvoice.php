@@ -11,6 +11,7 @@ $row_id = isset($_GET['row_id']) ? $_GET['row_id'] : '';
 
 
 
+
 $stmt = $pdo->prepare("
     SELECT cashback
     FROM receiveallpayment
@@ -24,9 +25,19 @@ $stmt->execute(['row_id' => $row_id]);
 $previous_row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
-$admission = isset($_GET['admission']) ? $_GET['admission'] : '';
-$enroll = isset($_GET['enroll']) ? $_GET['enroll'] : '';
-$amount = isset($_GET['pay']) ? $_GET['pay'] : '';
+$admission = isset($_GET['admission']) ? $_GET['admission'] : 'null';
+$enroll = isset($_GET['enroll']) ? $_GET['enroll'] : 'null';
+$amount = isset($_GET['pay']) ? $_GET['pay'] : 'null';
+
+$slipTitle = 'Payment Slip';
+
+if ($admission > 0 && $enroll == 'null') {
+    $slipTitle = 'Admission Payment Slip';
+} elseif ($enroll != 'null' && $amount != 'null') {
+    $slipTitle = 'Enrollment Payment Slip';
+} else {
+    $slipTitle = 'Allotment Payment Slip';
+}
 
 if($admission>0 && $enroll=='null'&& $amount=='null')
 {
@@ -228,112 +239,144 @@ $duesAmount = $totalAmount - ($totalPaidAmount+$previous_row['cashback']);
 
 <head>
     <title>Payment Receipt</title>
+  
     <style>
-        @media print {
-            .print-buttons {
+@media print {
+    .no-print { display:none; }
+    @page { size:A4; margin:8mm; }
+    .print-buttons {
                 display: none;
             }
 
-            @page {
-                size: A4;
-                /* margin: 2mm; */
-                /* Reduced margin to fit more content */
-            }
+                .footer {
+        margin-top: 43px !important;  /* PRINT me kam gap */
+        /* padding-top: 10px;            /* signature / stamp space */
+        /* border-top: 1px solid #999; */ 
 
-            /* Remove browser-added headers and footers */
-            @page {
-                margin-top: 0mm;
-                margin-bottom: 0mm;
-            }
+        font-size: 11px;
+        text-align: center;
+    }
 
-            body {
-                margin: 0;
-                /* Remove default body margin */
-            }
+    /* Page break ko rokne ke liye */
+    .footer {
+        page-break-inside: avoid;
+    }
 
-            /* Ensure no extra content is added by the browser */
-            header,
-            footer {
-                display: none !important;
-            }
-        }
+    .invoice-header img{
+    height:75px !important;
+}
+}
 
-        .container {
-            width: 100%;
-            max-width: 297mm;
-            /* A4 width in landscape */
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 3mm;
-            /* Reduced gap between copies */
-        }
+body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:#f4f4f4;
+}
 
-        .receipt-copy {
-            width: 100%;
-            padding: 3mm;
-            /* Increased padding for a cleaner look */
-            border: 1px solid #000;
-            box-sizing: border-box;
-            font-size: 10pt;
-            /* Increased font size for better readability */
-            height: auto;
-            /* Allow flexible height */
-            /* min-height: 270mm; */
-            /* Ensures full use of A4 page */
-        }
+.invoice{
+    background:#fff;
+    border:1px solid #000;
+    padding:12px;
+    margin-bottom:20px;
+    font-size:10pt;
+}
 
-        .copy-label {
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 0mm;
-            /* Increased margin for better spacing */
-            font-size: 12pt;
-            /* Increased font size for better visibility */
-        }
+.invoice-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:2px solid #000;
+    padding-bottom:8px;
+}
 
-        table {
-            width: 100%;
-            font-size: 9pt;
-            /* Slightly larger font for tables */
-            border-collapse: collapse;
-            /* Reduce spacing */
-        }
+.invoice-header img{
+    height:100px;
+}
 
-        th,
-        td {
-            padding: 1mm;
-            /* Increased padding for clarity */
-        }
+.invoice-title{
+    text-align:right;
+}
 
-        .header-img {
-            width: 100%;
-            height: auto;
-            max-height: 20mm;
-            /* Increased header size for better visibility */
-        }
+.invoice-title h2{
+    margin:0;
+    font-size:16pt;
+    letter-spacing:1px;
+}
 
-        /* Minimize vertical space */
-        div {
-            margin: 0;
-            padding: 2mm;
-            /* Reduced padding for less space wastage */
-        }
+.meta{
+    width:100%;
+    margin-top:10px;
+    border-collapse:collapse;
+}
 
-        /* Custom footer styling */
-        .custom-footer {
-            font-size: 8pt;
-            /* Slightly larger font for footer */
-            text-align: center;
-            margin-top: 0mm;
-        }
+.meta td{
+    padding:4px;
+}
 
-        .custom-footer a {
-            text-decoration: none;
-            color: black;
-            /* Ensure links don’t appear clickable */
-        }
-    </style>
+.items{
+    width:100%;
+    margin-top:10px;
+    border-collapse:collapse;
+}
+
+.items th{
+    background:#eee;
+    border:1px solid #000;
+    padding:6px;
+}
+
+.items td{
+    border:1px solid #000;
+    padding:6px;
+}
+
+.summary{
+    margin-top:10px;
+    width:40%;
+    float:right;
+    border-collapse:collapse;
+}
+
+.summary td{
+    padding:6px;
+}
+
+.summary tr:last-child{
+    font-weight:bold;
+    background:#ffeaea;
+}
+
+.highlight{
+    clear:both;
+    margin-top:10px;
+    padding:8px;
+    background:#e8fdf5;
+    border:1px dashed #008000;
+    font-weight:bold;
+    text-align:center;
+}
+
+.words{
+    margin-top:8px;
+    padding:6px;
+    background:#f0f0ff;
+    border:1px solid #000;
+}
+
+.footer{
+    margin-top:70px;
+    display:flex;
+    justify-content:space-between;
+    font-size:9pt;
+}
+
+.copy{
+    font-size:11pt;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:5px;
+}
+</style>
+
 
 </head>
 
@@ -343,244 +386,191 @@ $duesAmount = $totalAmount - ($totalPaidAmount+$previous_row['cashback']);
     <?php else: ?>
         <div class="container">
             <!-- Self Copy -->
-            <div class="receipt-copy">
-                <div class="copy-label">Self Copy</div>
-                <div class="print-buttons">
+        
+
+            <div class="invoice">
+
+    <div class="copy">SELF COPY</div>
+ <div class="print-buttons">
                     <button id="printBtn" onclick="window.print()">
                         <img src="../images/print_icon.gif" alt="Print" width="15px" height="15px">
                     </button>
                 </div>
+    <div class="invoice-header">
+        <img src="../../image/harihomes1-logo.png" alt="Company Logo" width="">
+        
+        <div class="invoice-title">
+            <h2><?php echo $slipTitle; ?></h2>
+            <div>Date: <?php echo $invoiceDate; ?></div>
+            <div>Invoice No: <?php echo $invoiceNo; ?></div>
+            <div>Receipt No: <?php echo $receiptno; ?></div>
+             <?php if($previous_row['cashback']>0): ?>
+                    <div>CashBack Applied: <?php echo $previous_row['cashback']; ?></div>
+                <?php endif; ?>
+        </div>
+    </div>
 
-                <div style="border: thin solid #000000">
-                    <img src="../images/hariheaderinvoice.png" class="header-img" alt="Header Image">
-                </div>
+    <table class="meta">
+        <tr>
+            <td width="15%">Customer:</td>
+            <td width="60%"><b><?php echo $customerName; ?></b></td>
+            <td width="25%">Payment Mode:</td>
+            <td><b><?php echo strtoupper($paymentMode); ?></b></td>
+        </tr>
+        <tr>
+            <td>Address:</td>
+            <td colspan="3"><?php echo $customerAddress; ?></td>
+        </tr>
+    </table>
 
-                <table style="border-right: thin solid #000; border-left: thin solid #000; background-color:#fffbd5; color:black">
-                    <tr>
-                        <td width="10%">Name:</td>
-                        <td width="60%"><b><?php echo htmlspecialchars($customerName); ?></b></td>
-                        <td width="10%">Date:</td>
-                        <td width="20%"><b><?php echo htmlspecialchars($invoiceDate); ?></b></td>
-                    </tr>
-                    <tr>
-                        <td>Address:</td>
-                        <td><b><?php echo htmlspecialchars($customerAddress); ?></b></td>
-                        <td>Invoice No:</td>
-                        <td><b><?php echo htmlspecialchars($invoiceNo); ?></b></td>
-                    </tr>
-                    <tr>
-                        <td>Receipt No:</td>
-                        <td><b><?php echo htmlspecialchars($receiptno); ?></b></td>
-                       <td>CashBack Applied:</td>
-                        <td><b><?php echo htmlspecialchars($previous_row['cashback']); ?></b></td>
-                    </tr>
-                </table>
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Sr</th>
+                <th>Description</th>
+                <th>Mode</th>
+                <th align="right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="center">1</td>
+                <td><?php echo $productName; ?> Payment</td>
+                <td align="center"><?php echo $paymentMode; ?></td>
+                <td align="right">₹ <?php echo number_format($payAmount,2); ?></td>
+            </tr>
+        </tbody>
+    </table>
 
-                <div style="border: thin solid #000000; background-color:#fffbd5;">
-                    <table style="border-collapse: collapse; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 10%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">SR NO</th>
-                                <th style="width: 50%; text-align: left; border-bottom: thin solid #000; padding: 0.5mm;">DESCRIPTION</th>
-                                <th style="width: 20%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">Mode</th>
-                                <th style="width: 20%; text-align: right; border-bottom: thin solid #000; padding: 0.5mm;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="text-align: center; padding: 0.5mm;">1</td>
-                                <td style="text-align: left; padding: 0.5mm;"><?php echo htmlspecialchars($productName); ?> Payment</td>
-                                <td style="text-align: center; padding: 0.5mm;"><?php echo htmlspecialchars($paymentMode); ?></td>
-                                <td style="text-align: right; padding: 0.5mm;"><?php echo htmlspecialchars($payAmount); ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <table class="summary">
+        <tr>
+            <td>Total Amount</td>
+            <td align="right">₹ <?php echo number_format($totalAmount,2); ?></td>
+        </tr>
+        <tr>
+            <td>Total Paid</td>
+            <td align="right" style="color:green;">₹ <?php echo number_format($totalPaidAmount,2); ?></td>
+        </tr>
+        <tr>
+            <td>Due Amount</td>
+            <td align="right" style="color:red;">₹ <?php echo number_format($duesAmount,2); ?></td>
+        </tr>
+    </table>
 
-                <div style="background-color:#fffbd5;">
-                    <table>
-                        <tr>
-                            <td width="50%"><b>Total:</b></td>
-                            <td width="50%"><b><?php echo htmlspecialchars($totalAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($payAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Total Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($totalPaidAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Due:</b></td>
-                            <td><b><?php echo htmlspecialchars($duesAmount); ?></b></td>
-                        </tr>
-                        <?php if ($paymentMode === 'cheque'): ?>
-                            <tr>
-                                <td><b>Cheque No:</b></td>
-                                <td><b><?php echo htmlspecialchars($chequeNumber); ?></b></td>
-                            </tr>
-                            <tr>
-                                <td><b>Bank:</b></td>
-                                <td><b><?php echo htmlspecialchars($bankName); ?></b></td>
-                            </tr>
-                        <?php elseif ($paymentMode === 'bank_transfer'): ?>
-                            <?php if ($neft_payment): ?>
-                                <tr>
-                                    <td><b>NEFT Reference Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($neft_payment); ?></b></td>
-                                </tr>
-                            <?php elseif ($rtgs_payment): ?>
-                                <tr>
-                                    <td><b>RTGS Reference Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($rtgs_payment); ?></b></td>
-                                </tr>
-                            <?php elseif ($paymentMode === 'bank_transfer'): ?>
-                                <tr>
-                                    <td><b>UTR Number:</b></td>
-                                    <td><b><?php echo htmlspecialchars($utrNumber); ?></b></td>
-                                </tr>
-                            <?php endif; ?>
-                        <?php endif; ?>
-                    </table>
-                </div>
+    <div class="highlight">
+        Current Payment Received: ₹ <?php echo number_format($payAmount,2); ?>
+    </div>
 
-                <div style="background-color:#28ffeb;">
-                    <b>Amount in words:</b>
-                    <b style="color:red"><?php echo htmlspecialchars($amountWords); ?></b>
-                </div>
+    <div class="words">
+        <b>Amount in Words:</b> <?php echo $amountWords; ?>
+    </div>
 
-                <div style="background-color:#fffbd5; font-size: 6pt; padding: 5px;">
-                    <b>Terms:</b> 1. No exchanges. 2. Payment failure responsibility of customer. 3. Darbhanga jurisdiction.
+    <div class="footer">
+        <div>
+            Prepared By<br>
+            <b><?php echo $bill_prepared_by_name; ?></b>
+        </div>
+        <div>
+            Authorized Signatory
+        </div>
+        <div>
+            Received By
+        </div>
+    </div>
 
-                    <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 7pt;">
-                        <div style="text-align: left;">
-                            <?php echo $bill_prepared_by_name; ?><br>
-                            Prepared by:
-                        </div>
-                        <div style="text-align: center;">Authorized Signatory</div>
-                        <div style="text-align: right;">Received by:</div>
-                    </div>
-                </div>
-
-                <div class="custom-footer">
-                    📍 1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007 |
-                    🌐 <a href="http://www.jankivilla.com/">www.jankivilla.com</a> |
-                    ✉️ <a href="mailto:abdeveloperspl@gmail.com">abdeveloperspl@gmail.com</a>
-                </div>
-            </div>
-
-            <!-- Customer Copy -->
-            <div class="receipt-copy">
-                <div class="copy-label">Customer Copy</div>
-                <div style="border: thin solid #000000">
-                    <img src="../images/hariheaderinvoice.png" class="header-img" alt="Header Image">
-                </div>
-
-                <table style="border-right: thin solid #000; border-left: thin solid #000; background-color:#fffbd5; color:black">
-                    <tr>
-                        <td width="10%">Name:</td>
-                        <td width="60%"><b><?php echo htmlspecialchars($customerName); ?></b></td>
-                        <td width="10%">Date:</td>
-                        <td width="20%"><b><?php echo htmlspecialchars($invoiceDate); ?></b></td>
-                    </tr>
-                    <tr>
-                        <td>Address:</td>
-                        <td><b><?php echo htmlspecialchars($customerAddress); ?></b></td>
-                        <td>Invoice No:</td>
-                        <td><b><?php echo htmlspecialchars($invoiceNo); ?></b></td>
-                    </tr>
-                    <tr>
-                        <td>Receipt No:</td>
-                        <td><b><?php echo htmlspecialchars($receiptno); ?></b></td>
-                        <td>CashBack Applied:</td>
-                        <td><b><?php echo htmlspecialchars($previous_row['cashback']); ?></b></td>
-                    </tr>
-                </table>
-
-                <div style="border: thin solid #000000; background-color:#fffbd5;">
-                    <table style="border-collapse: collapse; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="width: 10%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">SR NO</th>
-                                <th style="width: 50%; text-align: left; border-bottom: thin solid #000; padding: 0.5mm;">DESCRIPTION</th>
-                                <th style="width: 20%; text-align: center; border-bottom: thin solid #000; padding: 0.5mm;">Mode</th>
-                                <th style="width: 20%; text-align: right; border-bottom: thin solid #000; padding: 0.5mm;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="text-align: center; padding: 0.5mm;">1</td>
-                                <td style="text-align: left; padding: 0.5mm;"><?php echo htmlspecialchars($productName); ?> Payment</td>
-                                <td style="text-align: center; padding: 0.5mm;"><?php echo htmlspecialchars($paymentMode); ?></td>
-                                <td style="text-align: right; padding: 0.5mm;"><?php echo htmlspecialchars($payAmount); ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="background-color:#fffbd5;">
-                    <table>
-                        <tr>
-                            <td width="50%"><b>Total:</b></td>
-                            <td width="50%"><b><?php echo htmlspecialchars($totalAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($payAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Total Paid:</b></td>
-                            <td><b><?php echo htmlspecialchars($totalPaidAmount); ?></b></td>
-                        </tr>
-                        <tr>
-                            <td><b>Due:</b></td>
-                            <td><b><?php echo htmlspecialchars($duesAmount); ?></b></td>
-                        </tr>
-                        <?php if ($paymentMode === 'cheque'): ?>
-                            <tr>
-                                <td><b>Cheque No:</b></td>
-                                <td><b><?php echo htmlspecialchars($chequeNumber); ?></b></td>
-                            </tr>
-                            <tr>
-                                <td><b>Bank:</b></td>
-                                <td><b><?php echo htmlspecialchars($bankName); ?></b></td>
-                            </tr>
-                        <?php elseif ($paymentMode === 'bank_transfer'): ?>
-                            <tr>
-                                <td><b>UTR:</b></td>
-                                <td><b><?php echo htmlspecialchars($utrNumber); ?></b></td>
-                            </tr>
-                        <?php endif; ?>
-                    </table>
-                </div>
-
-                <div style="background-color:#28ffeb;">
-                    <b>Amount in words:</b>
-                    <b style="color:red"><?php echo htmlspecialchars($amountWords); ?></b>
-                </div>
-
-                <div style="background-color:#fffbd5; font-size: 6pt; padding: 5px;">
-                    <b>Terms:</b> 1. No exchanges. 2. Payment failure responsibility of customer. 3. Darbhanga jurisdiction.
-
-                    <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 7pt;">
-                        <div style="text-align: left;">
-                            <?php echo $bill_prepared_by_name; ?><br>
-                            Prepared by:
-                        </div>
-                        <div style="text-align: center;">Authorized Signatory</div>
-                        <div style="text-align: right;">Received by:</div>
-                    </div>
-                </div>
-
-                <div class="custom-footer">
-                    📍 1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007 |
-                    🌐 <a href="http://www.jankivilla.com">www.jankivilla.com</a> |
-                    ✉️ <a href="mailto:abdeveloperspl@gmail.com">abdeveloperspl@gmail.com</a>
-                </div>
-            </div>
+</div>
         </div>
     <?php endif; ?>
+            <!-- Customer Copy -->
+           
+<div class="invoice">
+
+    <div class="copy">CUSTOMER COPY</div>
+<!-- ../images/hariheaderinvoice.png -->
+
+    <div class="invoice-header">
+        <img src="../../image/harihomes1-logo.png" alt="Company Logo">
+        <div class="invoice-title">
+            <h2><?php echo $slipTitle; ?></h2>
+            <div>Date: <?php echo $invoiceDate; ?></div>
+            <div>Invoice No: <?php echo $invoiceNo; ?></div>
+            <div>Receipt No: <?php echo $receiptno; ?></div>
+            <?php if($previous_row['cashback']>0): ?>
+                    <div>CashBack Applied: <?php echo $previous_row['cashback']; ?></div>
+                <?php endif; ?>
+        </div>
+    </div>
+
+    <table class="meta">
+        <tr>
+            <td width="15%">Customer:</td>
+            <td width="60%"><b><?php echo $customerName; ?></b></td>
+            <td width="25%">Payment Mode:</td>
+            <td><b><?php echo strtoupper($paymentMode); ?></b></td>
+        </tr>
+        <tr>
+            <td>Address:</td>
+            <td colspan="3"><?php echo $customerAddress; ?></td>
+        </tr>
+    </table>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Sr</th>
+                <th>Description</th>
+                <th>Mode</th>
+                <th align="right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="center">1</td>
+                <td><?php echo $productName; ?> Payment</td>
+                <td align="center"><?php echo $paymentMode; ?></td>
+                <td align="right">₹ <?php echo number_format($payAmount,2); ?></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="summary">
+        <tr>
+            <td>Total Amount</td>
+            <td align="right">₹ <?php echo number_format($totalAmount,2); ?></td>
+        </tr>
+        <tr>
+            <td>Total Paid</td>
+            <td align="right" style="color:green;">₹ <?php echo number_format($totalPaidAmount,2); ?></td>
+        </tr>
+        <tr>
+            <td>Due Amount</td>
+            <td align="right" style="color:red;">₹ <?php echo number_format($duesAmount,2); ?></td>
+        </tr>
+    </table>
+
+    <div class="highlight">
+        Current Payment Received: ₹ <?php echo number_format($payAmount,2); ?>
+    </div>
+
+    <div class="words">
+        <b>Amount in Words:</b> <?php echo $amountWords; ?>
+    </div>
+
+    <div class="footer">
+        <div>
+            Prepared By<br>
+            <b><?php echo $bill_prepared_by_name; ?></b>
+        </div>
+        <div>
+            Authorized Signatory
+        </div>
+        <div>
+            Received By
+        </div>
+    </div>
+
+</div>
+
 
     <script>
         <?php if (!isset($error)): ?>

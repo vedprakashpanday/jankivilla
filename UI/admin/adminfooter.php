@@ -4,6 +4,3 @@
   </div>Designed By&nbsp;<a href="#" target="_blank">Info Era
   </a>
 </footer>
-</body>
-
-</html>

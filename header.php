@@ -538,7 +538,7 @@
                                                     <a href="#">Map</a>
                                                     <ul class="submenu">
                                                         <li><a href="2D.php" title="Phase 1 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 1</a></li>
-                                                        <!-- <li><a href="Phase2map.php" title="Phase 2 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 2</a></li> -->
+                                                        <li><a href="Phase2map.php" title="Phase 2 - Amitabh Builders & Developers | Amitabh Builders & Developers">Phase 2</a></li>
                                                     </ul>
                                                 </li>
 

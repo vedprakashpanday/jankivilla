@@ -114,7 +114,7 @@ if (isset($_POST['btnsubmit'])) {
          overflow: hidden;
          /* Prevents overflow */
          width: 100%;
-         height: 100%;
+         height: 35rem;
       }
 
       /* Ensure images fit properly */
@@ -124,6 +124,10 @@ if (isset($_POST['btnsubmit'])) {
          object-fit: cover;
          /* Makes image cover the div without distortion */
          display: block;
+      }
+
+      h5 a:hover {
+         color: #fff9f9;
       }
    </style>
 </head>
@@ -247,14 +251,14 @@ if (isset($_POST['btnsubmit'])) {
             <!-- Banner area end -->
 
             <!-- extra-image -->
-            <div class="extra-image-container p-relative">
+            <!-- <div class="extra-image-container p-relative">
                <div class="extra-image text-center wow im float-bob-x" data-wow-delay="800ms">
                   <img src="image/clipart-man-standing.png" alt="Plots in Amitabh Builders & Developers Phase 3 Darbhanga" title="Plot for sale in Darbhanga Near Airport AIIMS">
                </div>
                <div class="extra-image-2 wow im float-bob-x" data-wow-delay="800ms">
                   <img src="images/shape-1.png" alt="Plot for sale in Darbhanga Near Airport Railway station AIIMS,  Plot near. Dilli more Darbhanga nearby bus stand and airport" title="Plot for sale at Sonki and Khutwara Chowk">
                </div>
-            </div>
+            </div> -->
             <!-- extra-image -->
 
             <!-- About area start -->
@@ -367,7 +371,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-saw"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Garden</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Garden</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -386,7 +390,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Park</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Park</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -405,7 +409,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-house"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Waste Management</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Waste Management</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -413,6 +417,7 @@ if (isset($_POST['btnsubmit'])) {
                               </a>
                            </div>
                         </div>
+
                         <!-- block -->
                         <div class="swiper-slide">
                            <div class="service-slider-area p-relative">
@@ -424,7 +429,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Water Supply</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Water Supply</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -442,7 +447,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Bank</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Bank</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -460,7 +465,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Footpath</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Footpath</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -478,7 +483,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Healthcare</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Healthcare</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -496,7 +501,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Yoga & Medication</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Yoga & Medication</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -514,7 +519,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Security</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Security</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -532,7 +537,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Underground Drainage</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Underground Drainage</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -550,7 +555,7 @@ if (isset($_POST['btnsubmit'])) {
                                     <div class="icon-box">
                                        <i class="icon-concrete-mixer-1"></i>
                                     </div>
-                                    <h5 class="mb-10"><a href="#">Electricity</a></h5>
+                                    <h5 class="mb-10"><a href="#" class="text-dark">Electricity</a></h5>
                                  </div>
                               </div>
                               <a class="btn-icon" href="#">
@@ -635,112 +640,7 @@ if (isset($_POST['btnsubmit'])) {
             </section>
             <!-- Service provider area end -->
 
-            <!-- Project area start -->
-            <section class="project-section section-space">
-               <div class="custom-container">
-                  <div class="title-box text-center mb-60 wow fadeInLeft" data-wow-delay=".5s">
-                     <span class="section-sub-title">Our Projects</span>
-                     <h3 class="section-title mt-10 mb-25">Projects Nearby Places</h3>
-                  </div>
-                  <div class="row g-0">
-                     <!-- block -->
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".5s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Dharbhanga Airpoart.png" alt="buy commercial space, best commercial real estate company in near darbhanga airport, low price plots near me in darbhanga airport" title="Cheap and Best Commercial Real Estate Company in Near Darbhanga Airport">
-                           </figure>
-                           <div class="content">
-                              <h2>4.5 KM</h2>
-                              <h4>Dharbhanga Airpoart</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <!-- block -->
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInDown" data-wow-delay=".5s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Dharbhanga Railway station.png" alt="top 10 real estate company in near darbhanga railway station, best property consultant near me in darbhanga railway station" title="Commercial Property for Sale by Owner near me in Darbhanga Railway Station">
-                           </figure>
-                           <div class="content">
-                              <h2>3 KM</h2>
-                              <h4>Dharbhanga New Railway station</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <!-- block -->
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInLeft" data-wow-delay=".5s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/DMCH (1).png" alt="cheap land in near dmch, cheap and best land in near dmch, best property dealer company in dmch" title="Cheapest Plot in Darbhanga - Commercial Residential Real Estate in DMCH">
-                           </figure>
-                           <div class="content">
-                              <h2>8 KM</h2>
-                              <h4>DMCH</h4>
-                           </div>
-                        </div>
-                     </div>
-
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Darbhanga museum.png" alt="commercial real estate company in near darbhanga museum, large commercial real estate companies in darbhanga museum, business and real estate for sale in darbhanga museum" title="Large Commercial Real Estate Companies in Darbhanga Museum">
-                           </figure>
-                           <div class="content">
-                              <h2>7.0 KM</h2>
-                              <h4>Darbhanga Museum</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Darbhanga Civil Court.png" alt="proerty management companies in darbhanga, commercial property management near me in near mabbi thana, land and commercial property for sale near mabbi thana darbhanga " title="Property Management Company Near Mabbi Thana Darbhanga">
-                           </figure>
-                           <div class="content">
-                              <h2>10.0 KM</h2>
-                              <h4>Dharbhanga Civil Court</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Darbhanga AIIMS.png" alt="property for sale near me, property to buy near me, buy property in darbhanga" title="Property for Sale Near Me in Darbhanga">
-                           </figure>
-                           <div class="content">
-                              <h2>3.5 KM</h2>
-                              <h4>Dharbhanga AIIMS</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <!-- block -->
-                     <div class="col-xxl-4 col-xxl-4 col-lg-4 wow fadeInRight" data-wow-delay=".7s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Dharbhanga Bus Stand.png" alt="property website,sell plots in darbhanga" title="Residential Plots Near Bus Stand Darbhanga ">
-                           </figure>
-                           <div class="content">
-                              <h2>4.0 KM</h2>
-                              <h4>Dharbhanga Bus Stand</h4>
-                           </div>
-                        </div>
-                     </div>
-                     <!-- block -->
-                     <div class="col-xxl-8 col-xxl-8 col-lg-8 wow fadeInLeft" data-wow-delay=".7s">
-                        <div class="project-box-area p-relative">
-                           <figure class="image w-img">
-                              <img src="image/Mithila haat.png" alt="Plots near mithila haat, buy plots close to mithila haat, sit development near mithila haat" title="Property Near Mithila Haat Darbhanga">
-                           </figure>
-                           <div class="content">
-                              <h2>35.0 KM</h2>
-                              <h4>Mithila Haat</h4>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </section>
-            <!-- Project area end -->
+        
 
             <!-- Features area start -->
             <section class="features-section bg-color-1 p-relative fix">
@@ -1044,18 +944,18 @@ if (isset($_POST['btnsubmit'])) {
                            </a>
                            <div class="blog-content-area p-relative">
                               <div class="date-meta">
-                                 <a class="date" href="#">14</a>
+                                 <a class="date " href="#" class="">14</a>
                                  <a class="month" href="#">April 2021</a>
                               </div>
                               <div class="post-meta">
                                  <ul>
-                                    <li><i class="icon-user-2"></i> <a href="#">Login</a></li>
-                                    <li><i class="icon-chat-bubble-1"></i> <a href="#">0 comments</a></li>
+                                    <li><i class="icon-user-2"></i> <a href="#" class="text-dark">Login</a></li>
+                                    <li><i class="icon-chat-bubble-1"></i> <a href="#" class="text-dark">0 comments</a></li>
                                  </ul>
                               </div>
-                              <h5 class="blog-title"><a href="blog.php">Bihar RERA penalises Green Vatika Homes, Arunendra Developers & Shiba Welcome.</a></h5>
+                              <h5 class="blog-title"><a href="blog.php" class="text-dark">Bihar RERA penalises Green Vatika Homes, Arunendra Developers & Shiba Welcome.</a></h5>
                               <a class="blog-btn-box" href="blog.php" title="top 10 commercial real estate companies | Commercial and Residential Real Estate in Darbhanga Bihar">
-                                 <span>Read More</span>
+                                 <span class="text-dark">Read More</span>
                                  <span><i class="icon-round-arrow-right"></i></span>
                               </a>
                            </div>
@@ -1074,13 +974,13 @@ if (isset($_POST['btnsubmit'])) {
                               </div>
                               <div class="post-meta">
                                  <ul>
-                                    <li><i class="icon-user-2"></i> <a href="#">Login</a></li>
-                                    <li><i class="icon-chat-bubble-1"></i> <a href="#">0 comments</a></li>
+                                    <li><i class="icon-user-2"></i> <a href="#" class="text-dark">Login</a></li>
+                                    <li><i class="icon-chat-bubble-1"></i> <a href="#" class="text-dark">0 comments</a></li>
                                  </ul>
                               </div>
-                              <h5 class="blog-title"><a href="blog.php" title="Selling Commercial Property by Owner | Commercial and Recidential Real Estate Market Analysis">Patna metro rail project awaits funds from Japan agency.</a></h5>
+                              <h5 class="blog-title"><a href="blog.php" class="text-dark" title="Selling Commercial Property by Owner | Commercial and Recidential Real Estate Market Analysis">Patna metro rail project awaits funds from Japan agency.</a></h5>
                               <a class="blog-btn-box" href="blog.php" title="List of Commercial Real Estate Brokers | Off Market commercial Real Estate for Sale | Cheap land in Darbhanga">
-                                 <span>Read More</span>
+                                 <span class="text-dark">Read More</span>
                                  <span><i class="icon-round-arrow-right"></i></span>
                               </a>
                            </div>
@@ -1099,13 +999,14 @@ if (isset($_POST['btnsubmit'])) {
                               </div>
                               <div class="post-meta">
                                  <ul>
-                                    <li><i class="icon-user-2"></i> <a href="#">Login</a></li>
-                                    <li><i class="icon-chat-bubble-1"></i> <a href="#">0 comments</a></li>
+                                    <li><i class="icon-user-2"></i> <a href="#" class="text-dark">Login</a></li>
+                                    <li><i class="icon-chat-bubble-1"></i> <a href="#" class="text-dark">0 comments</a></li>
                                  </ul>
                               </div>
-                              <h5 class="blog-title"><a href="blog.php">Amina Construction fined Rs 7 lakh, RERA imposed penalty for advertising SUDHA COMPLEX without registration.</a></h5>
+                              <h5 class="blog-title"><a href="blog.php" class="text-dark">Amina Construction fined Rs 7 lakh, RERA imposed penalty for advertising SUDHA COMPLEX without registration.</a></h5>
                               <a class="blog-btn-box" href="blog.php" title="Land for Residential use Near AIIMS Darbhanga">
-                                 <span>Read More</span>
+                                 <span class="text-dark">Read More</span>
+                                 <span class="text-dark">Read More</span>
                                  <span><i class="icon-round-arrow-right"></i></span>
                               </a>
                            </div>

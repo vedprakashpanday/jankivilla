@@ -281,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_id'])) {
 
                                                                              <div class="col-md-3 mb-3" style="display:none;" id="transactionTypeField">
                                                                                 <label class="form-label fw-semibold">Transaction Type <span class="text-danger">*</span></label>
-                                                                                <select class="form-control" name="transaction_type" id="transactionType" required>
+                                                                                <select class="form-control" name="transaction_type" id="transactionType" >
                                                                                     <option value="">Select Type</option>
                                                                                     <option value="imps">IMPS</option>
                                                                                     <option value="neft">NEFT</option>

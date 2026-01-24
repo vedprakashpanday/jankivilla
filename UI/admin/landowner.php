@@ -1,7 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 session_start();
 include_once "connectdb.php";
 
@@ -11,6 +11,97 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
     exit();
 }
 
+function jsonToText1($json, $type = 'old')
+{
+    if(!empty($json))
+        {
+    $data = json_decode($json, true);
+    if (!is_array($data)) return '';
+
+    if ($type === 'old' && !empty($data['old_khesra_no'])) {
+        return htmlspecialchars($data['old_khesra_no']);
+    }
+
+    if ($type === 'new' && !empty($data['new_khesra_no'])) {
+        return htmlspecialchars($data['new_khesra_no']);
+    }
+
+if ($type === 'new' && !empty($data['new_khata'])) {
+        return htmlspecialchars($data['new_khata']);
+    }
+
+    if ($type === 'old' && !empty($data['old_khata'])) {
+        return htmlspecialchars($data['old_khata']);
+    }
+        }
+    return '';
+}
+
+function jsonToText($json)
+{
+    $data = json_decode($json, true);
+    if (!is_array($data)) return '';
+
+    // Measurement order + labels
+    $units = [
+        'bigha'   => 'Bigha',
+        'kattha'  => 'Kattha',
+        'dhoor'    => 'Dhoor',
+        'kanma'   => 'Kanma',
+        'dismil'  => 'Dismil'
+    ];
+
+    $output = [];
+
+    foreach ($units as $key => $label) {
+        if (isset($data[$key]) && is_numeric($data[$key]) && $data[$key] > 0) {
+            $output[] = $data[$key] . ' ' . $label;
+        }
+    }
+
+    return htmlspecialchars(implode(' ', $output));
+}
+
+function jsonToText2($json, $type = '')
+{
+    if (empty($json) || empty($type)) {
+        return '';
+    }
+
+    $data = json_decode($json, true);
+
+    if (!is_array($data)) {
+        return '';
+    }
+
+    // direct key access
+    if (isset($data[$type]) && $data[$type] !== '') {
+        return htmlspecialchars($data[$type]);
+    }
+
+    return '';
+}
+
+
+if(isset($_POST['action']) && $_POST['action'] == 'fetch_land_owner' && isset($_POST['id'])){
+    $id = (int)$_POST['id'];
+    $stmt = $pdo->prepare("SELECT * FROM land_owner_payments WHERE id = ?");
+    $stmt->execute([$id]);
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if($data){
+        echo json_encode([
+            'status' => 'success',
+            'data' => $data
+        ]);
+    } else {
+        echo json_encode(['status' => 'error']);
+    }
+    exit;
+}
+
+
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -19,216 +110,287 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ==========================*/
     if (isset($_POST['submit'])) {
 
-        // JSON fields (safe)
-        $khesra_no = !empty($_POST['khesra_no'])
-            ? json_encode($_POST['khesra_no'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
 
-        $rakuwa = !empty($_POST['rakuwa'])
-            ? json_encode($_POST['rakuwa'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
+        // echo "<pre>";
+        // print_r($_POST);
 
-        $rate_per_katha = !empty($_POST['rate_per_katha'])
-            ? json_encode($_POST['rate_per_katha'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
+        // echo "</pre>";
+        // exit();
+      
+// JSON fields (safe)
+$khesra_no = !empty($_POST['khesra_no'])
+    ? json_encode($_POST['khesra_no'], JSON_UNESCAPED_UNICODE)
+    : json_encode([]);
 
-        // Owner details
-        $land_owner_name = $_POST['land_owner_name'];
-        $relation_name   = $_POST['relation_name'];
-        $address         = $_POST['address'];
-        $mobile1         = $_POST['mobile1'];
-        $mobile2         = $_POST['mobile2'];
-        $mauze_name      = $_POST['mauze_name'];
-        $thana_no        = $_POST['thana_no'];
-        $total_land_value = $_POST['total_land_value'];
+$rakuwa = !empty($_POST['rakuwa'])
+    ? json_encode($_POST['rakuwa'], JSON_UNESCAPED_UNICODE)
+    : json_encode([]);
 
-        // Nominee details
-        $nom_name       = $_POST['nominee_name'] ?? null;
-        $nom_relation   = $_POST['nominee_so_do_wo'] ?? null;
-        $nom_dob        = !empty($_POST['nominee_dob']) ? $_POST['nominee_dob'] : null;
-        $nom_mobile = !empty($_POST['nominee_mobile'])
-    ? (int) $_POST['nominee_mobile']
-    : null;
+$khata = !empty($_POST['khata'])
+    ? json_encode($_POST['khata'], JSON_UNESCAPED_UNICODE)
+    : json_encode([]);
 
-$nom_alt_mobile = !empty($_POST['nominee_alternate_mobile'])
-    ? (int) $_POST['nominee_alternate_mobile']
-    : null;
+// Owner details
+$land_owner_name  = $_POST['land_owner_name'] ?? null;
+$relation_name    = $_POST['relation_name'] ?? null;
+$address          = $_POST['address'] ?? null;
+$mobile1          = $_POST['mobile1'] ?? null;
+$mobile2          = $_POST['mobile2'] ?? null;
+$mauze_name       = $_POST['mauze_name'] ?? null;
+$thana_no         = $_POST['thana_no'] ?? null;
+$total_land_value = $_POST['total_land_value'] ?? null;
 
-$nom_pincode = !empty($_POST['nominee_pincode'])
-    ? (int) $_POST['nominee_pincode']
-    : null;
-        $nom_email      = $_POST['nominee_email'] ?? null;
-        $nom_aadhar     = $_POST['nominee_aadhar'] ?? null;
-        $nom_pan        = $_POST['nominee_pan'] ?? null;
-        $nom_address    = $_POST['nominee_address'] ?? null;
-        // $nom_pincode    = $_POST['nominee_pincode'] ?? null;
-        $nom_state      = $_POST['nominee_state'] ?? null;
-        $nom_district   = $_POST['nominee_district'] ?? null;
+$lo_state     = $_POST['lo_state'] ?? null;
+$lo_district  = $_POST['lo_district'] ?? null;
+$lo_block     = $_POST['lo_block'] ?? null;
+$lo_panchayat = $_POST['lo_panchayat'] ?? null;
+$lo_village   = $_POST['lo_village'] ?? null;
+$lo_aadhar    = $_POST['lo_aadhar'] ?? null;
+$lo_pan       = $_POST['lo_pan'] ?? null;
+$lo_dob       = !empty($_POST['lo_dob']) ? $_POST['lo_dob'] : null;
 
-        $status = 'active';
+$agree_date = !empty($_POST['agree_date']) ? $_POST['agree_date'] : null;
+$agree_dur  = $_POST['agree_dur'] ?? null;
+$jamabandi  = $_POST['jamabandi'] ?? null;
 
-        $stmt = $pdo->prepare("
-            INSERT INTO land_owner_payments
-            (
-                land_owner_name, relation_name, address, mobile1, mobile2,
-                mauze_name, thana_no, khesra_no, rakuwa, rate_per_katha,
-                total_land_value, nom_name, nom_relation, nom_dob,
-                nom_mobile, nom_alt_mobile, nom_email, nom_aadhar, nom_pan,
-                nom_address, nom_pin, nom_state, nom_district, status
-            )
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        ");
+// Nominee details
+$nom_name     = $_POST['nominee_name'] ?? null;
+$nom_relation = $_POST['nominee_so_do_wo'] ?? null;
+$nom_dob      = $_POST['nominee_dob'] ?? null;
+$rate_per_katha = $_POST['rate_per_katha'] ?? null;
 
-        $stmt->execute([
-            $land_owner_name,
-            $relation_name,
-            $address,
-            $mobile1,
-            $mobile2,
-            $mauze_name,
-            $thana_no,
-            $khesra_no,
-            $rakuwa,
-            $rate_per_katha,
-            $total_land_value,
-            $nom_name,
-            $nom_relation,
-            $nom_dob,
-            $nom_mobile,
-            $nom_alt_mobile,
-            $nom_email,
-            $nom_aadhar,
-            $nom_pan,
-            $nom_address,
-            $nom_pincode,
-            $nom_state,
-            $nom_district,
-            $status
-        ]);
+$nom_mobile = !empty($_POST['nominee_mobile']) ? (int)$_POST['nominee_mobile'] : null;
+$nom_alt_mobile = !empty($_POST['nominee_alternate_mobile']) ? (int)$_POST['nominee_alternate_mobile'] : null;
+$nom_pincode = !empty($_POST['nominee_pincode']) ? (int)$_POST['nominee_pincode'] : null;
 
-        $new_id = $pdo->lastInsertId();
+$nom_email    = $_POST['nominee_email'] ?? null;
+$nom_aadhar   = $_POST['nominee_aadhar'] ?? null;
+$nom_pan      = $_POST['nominee_pan'] ?? null;
+$nom_address  = $_POST['nominee_address'] ?? null;
+$nom_state    = $_POST['nominee_state'] ?? null;
+$nom_district = $_POST['nominee_district'] ?? null;
 
-        echo "<script>
-            alert('Land Owner Payment inserted successfully!');
-            window.location.href='?id={$new_id}';
-        </script>";
-        exit;
+$status = 'active';
+
+// PDO Insert
+$stmt = $pdo->prepare("
+    INSERT INTO land_owner_payments (
+        land_owner_name, relation_name, address, mobile1, mobile2,
+        mauze_name, thana_no, khesra_no, rakuwa, rate_per_katha,
+        total_land_value, nom_name, nom_relation, nom_dob,
+        nom_mobile, nom_alt_mobile, nom_email, nom_aadhar, nom_pan,
+        nom_address, nom_pin, nom_state, nom_district, status,
+        lo_state, lo_district, lo_block, lo_panchayat, lo_village,
+        lo_aadhar, lo_pan, agree_date, agree_dur, jamabandi, khata, lo_dob
+    )
+    VALUES (
+        ?,?,?,?,?, ?,?,?,?,?,
+        ?,?,?,?,?, ?,?,?,?,?,
+        ?,?,?,?,?,
+        ?,?,?,?,?, ?,?,?,?, ?,? 
+    )
+");
+
+$stmt->execute([
+    $land_owner_name,
+    $relation_name,
+    $address,
+    $mobile1,
+    $mobile2,
+
+    $mauze_name,
+    $thana_no,
+    $khesra_no,
+    $rakuwa,
+    $rate_per_katha,
+
+    $total_land_value,
+    $nom_name,
+    $nom_relation,
+    $nom_dob,
+
+    $nom_mobile,
+    $nom_alt_mobile,
+    $nom_email,
+    $nom_aadhar,
+    $nom_pan,
+
+    $nom_address,
+    $nom_pincode,
+    $nom_state,
+    $nom_district,
+    $status,
+
+    $lo_state,
+    $lo_district,
+    $lo_block,
+    $lo_panchayat,
+    $lo_village,
+    $lo_aadhar,
+    $lo_pan,
+    $agree_date,
+    $agree_dur,
+    $jamabandi,
+    $khata,
+    $lo_dob
+]);
+
+$new_id = $pdo->lastInsertId();
+
+echo "<script>
+    alert('Land Owner Payment inserted successfully!');
+    window.location.href='landowner.php';
+</script>";
+exit;
+
     }
 
-    /* =========================
-       UPDATE EXISTING RECORD
-    ==========================*/
-    if (isset($_POST['update']) && !empty($_POST['edit_id'])) {
+   /* =========================
+   UPDATE EXISTING RECORD
+==========================*/
+if (isset($_POST['update']) && !empty($_POST['edit_id'])) {
 
-        $edit_id = $_POST['edit_id'];
+    $edit_id = $_POST['edit_id'];
 
-        // JSON fields (update)
-        $khesra_no = !empty($_POST['khesra_no'])
-            ? json_encode($_POST['khesra_no'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
+    // JSON fields (same as insert)
+    $khesra_no = !empty($_POST['khesra_no'])
+        ? json_encode($_POST['khesra_no'], JSON_UNESCAPED_UNICODE)
+        : json_encode([]);
 
-        $rakuwa = !empty($_POST['rakuwa'])
-            ? json_encode($_POST['rakuwa'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
+    $rakuwa = !empty($_POST['rakuwa'])
+        ? json_encode($_POST['rakuwa'], JSON_UNESCAPED_UNICODE)
+        : json_encode([]);
 
-        $rate_per_katha = !empty($_POST['rate_per_katha'])
-            ? json_encode($_POST['rate_per_katha'], JSON_UNESCAPED_UNICODE)
-            : json_encode([]);
+    $khata = !empty($_POST['khata'])
+        ? json_encode($_POST['khata'], JSON_UNESCAPED_UNICODE)
+        : json_encode([]);
 
-        // Owner details
-        $land_owner_name = $_POST['land_owner_name'];
-        $relation_name   = $_POST['relation_name'];
-        $address         = $_POST['address'];
-        $mobile1         = $_POST['mobile1'];
-        $mobile2         = $_POST['mobile2'];
-        $mauze_name      = $_POST['mauze_name'];
-        $thana_no        = $_POST['thana_no'];
-        $total_land_value = $_POST['total_land_value'];
+    // Owner details
+    $land_owner_name  = $_POST['land_owner_name'] ?? null;
+    $relation_name    = $_POST['relation_name'] ?? null;
+    $address          = $_POST['address'] ?? null;
+    $mobile1          = $_POST['mobile1'] ?? null;
+    $mobile2          = $_POST['mobile2'] ?? null;
+    $mauze_name       = $_POST['mauze_name'] ?? null;
+    $thana_no         = $_POST['thana_no'] ?? null;
+    $total_land_value = $_POST['total_land_value'] ?? null;
 
-        // Nominee details
-        $nom_name       = $_POST['nominee_name'] ?? null;
-        $nom_relation   = $_POST['nominee_so_do_wo'] ?? null;
-        $nom_dob        = !empty($_POST['nominee_dob']) ? $_POST['nominee_dob'] : null;
-        $nom_mobile = !empty($_POST['nominee_mobile'])
-    ? (int) $_POST['nominee_mobile']
-    : null;
+    $lo_state     = $_POST['lo_state'] ?? null;
+    $lo_district  = $_POST['lo_district'] ?? null;
+    $lo_block     = $_POST['lo_block'] ?? null;
+    $lo_panchayat = $_POST['lo_panchayat'] ?? null;
+    $lo_village   = $_POST['lo_village'] ?? null;
+    $lo_aadhar    = $_POST['lo_aadhar'] ?? null;
+    $lo_pan       = $_POST['lo_pan'] ?? null;
+    $lo_dob       = !empty($_POST['lo_dob']) ? $_POST['lo_dob'] : null;
 
-$nom_alt_mobile = !empty($_POST['nominee_alternate_mobile'])
-    ? (int) $_POST['nominee_alternate_mobile']
-    : null;
+    $agree_date = $_POST['agree_date'] ?? null;
+    $agree_dur  = $_POST['agree_dur'] ?? null;
+    $jamabandi  = $_POST['jamabandi'] ?? null;
 
-$nom_pincode = !empty($_POST['nominee_pincode'])
-    ? (int) $_POST['nominee_pincode']
-    : null;
-        $nom_email      = $_POST['nominee_email'] ?? null;
-        $nom_aadhar     = $_POST['nominee_aadhar'] ?? null;
-        $nom_pan        = $_POST['nominee_pan'] ?? null;
-        $nom_address    = $_POST['nominee_address'] ?? null;
-        //$nom_pincode    = $_POST['nominee_pincode'] ?? null;
-        $nom_state      = $_POST['nominee_state'] ?? null;
-        $nom_district   = $_POST['nominee_district'] ?? null;
+    // Nominee details
+    $nom_name       = $_POST['nominee_name'] ?? null;
+    $nom_relation   = $_POST['nominee_so_do_wo'] ?? null;
+    $nom_dob        = $_POST['nominee_dob'] ?? null;
+    $rate_per_katha = $_POST['rate_per_katha'] ?? null;
 
-        $stmt = $pdo->prepare("
-            UPDATE land_owner_payments SET
-                land_owner_name=?,
-                relation_name=?,
-                address=?,
-                mobile1=?,
-                mobile2=?,
-                mauze_name=?,
-                thana_no=?,
-                khesra_no=?,
-                rakuwa=?,
-                rate_per_katha=?,
-                total_land_value=?,
-                nom_name=?,
-                nom_relation=?,
-                nom_dob=?,
-                nom_mobile=?,
-                nom_alt_mobile=?,
-                nom_email=?,
-                nom_aadhar=?,
-                nom_pan=?,
-                nom_address=?,
-                nom_pin=?,
-                nom_state=?,
-                nom_district=?
-            WHERE id=?
-        ");
+    $nom_mobile = !empty($_POST['nominee_mobile']) ? (int)$_POST['nominee_mobile'] : null;
+    $nom_alt_mobile = !empty($_POST['nominee_alternate_mobile']) ? (int)$_POST['nominee_alternate_mobile'] : null;
+    $nom_pincode = !empty($_POST['nominee_pincode']) ? (int)$_POST['nominee_pincode'] : null;
 
-        $stmt->execute([
-            $land_owner_name,
-            $relation_name,
-            $address,
-            $mobile1,
-            $mobile2,
-            $mauze_name,
-            $thana_no,
-            $khesra_no,
-            $rakuwa,
-            $rate_per_katha,
-            $total_land_value,
-            $nom_name,
-            $nom_relation,
-            $nom_dob,
-            $nom_mobile,
-            $nom_alt_mobile,
-            $nom_email,
-            $nom_aadhar,
-            $nom_pan,
-            $nom_address,
-            $nom_pincode,
-            $nom_state,
-            $nom_district,
-            $edit_id
-        ]);
+    $nom_email    = $_POST['nominee_email'] ?? null;
+    $nom_aadhar   = $_POST['nominee_aadhar'] ?? null;
+    $nom_pan      = $_POST['nominee_pan'] ?? null;
+    $nom_address  = $_POST['nominee_address'] ?? null;
+    $nom_state    = $_POST['nominee_state'] ?? null;
+    $nom_district = $_POST['nominee_district'] ?? null;
 
-        echo "<script>
-            alert('Record updated successfully!');
-            window.location.href='?id={$edit_id}';
-        </script>";
-        exit;
-    }
+    $stmt = $pdo->prepare("
+        UPDATE land_owner_payments SET
+            land_owner_name=?,
+            relation_name=?,
+            address=?,
+            mobile1=?,
+            mobile2=?,
+            mauze_name=?,
+            thana_no=?,
+            khesra_no=?,
+            rakuwa=?,
+            rate_per_katha=?,
+            total_land_value=?,
+            nom_name=?,
+            nom_relation=?,
+            nom_dob=?,
+            nom_mobile=?,
+            nom_alt_mobile=?,
+            nom_email=?,
+            nom_aadhar=?,
+            nom_pan=?,
+            nom_address=?,
+            nom_pin=?,
+            nom_state=?,
+            nom_district=?,
+            lo_state=?,
+            lo_district=?,
+            lo_block=?,
+            lo_panchayat=?,
+            lo_village=?,
+            lo_aadhar=?,
+            lo_pan=?,
+            agree_date=?,
+            agree_dur=?,
+            jamabandi=?,
+            khata=?,
+            lo_dob=?
+        WHERE id=?
+    ");
+
+    $stmt->execute([
+        $land_owner_name,
+        $relation_name,
+        $address,
+        $mobile1,
+        $mobile2,
+        $mauze_name,
+        $thana_no,
+        $khesra_no,
+        $rakuwa,
+        $rate_per_katha,
+        $total_land_value,
+        $nom_name,
+        $nom_relation,
+        $nom_dob,
+        $nom_mobile,
+        $nom_alt_mobile,
+        $nom_email,
+        $nom_aadhar,
+        $nom_pan,
+        $nom_address,
+        $nom_pincode,
+        $nom_state,
+        $nom_district,
+        $lo_state,
+        $lo_district,
+        $lo_block,
+        $lo_panchayat,
+        $lo_village,
+        $lo_aadhar,
+        $lo_pan,
+        $agree_date,
+        $agree_dur,
+        $jamabandi,
+        $khata,
+        $lo_dob,
+        $edit_id
+    ]);
+
+    echo "<script>
+        alert('Record updated successfully!');
+        window.location.href='landowner.php';
+    </script>";
+    exit;
+}
+
 
 
     // Add payment transaction (Ledger Entry) - SEPARATE ACTION
@@ -560,12 +722,91 @@ if (isset($_GET['id'])) {
                                                                     <div class="row" id="khesraContainer">
                                                                         <div class="col-md-6 mb-3">
                                                                             <label class="form-label fw-semibold">Land Owner Name <span class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control" name="land_owner_name" required value="<?php echo htmlspecialchars($edit_data['land_owner_name'] ?? ''); ?>">
+                                                                           <input 
+    type="text"
+    class="form-control" 
+    name="land_owner_name" 
+    id="land_owner_name"
+    list="designationList"
+    placeholder="-- Select/Enter Landowner Name"
+    required
+    value="<?= htmlspecialchars($edit_data['land_owner_name'] ?? '') ?>"
+>
+
+<datalist id="designationList">
+    <?php 
+        $stmt = $pdo->prepare("SELECT id, land_owner_name, nom_name FROM land_owner_payments");
+        $stmt->execute();
+        $sponsors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach($sponsors as $row):
+    ?>
+    <option data-id="<?= $row['id'] ?>" value="<?= htmlspecialchars($row['land_owner_name']) ?>">
+        <?= htmlspecialchars($row['nom_name']) ?>
+    </option>
+    <?php endforeach; ?>
+</datalist>
                                                                         </div>
+                                                                       
 
                                                                         <div class="col-md-6 mb-3">
                                                                             <label class="form-label fw-semibold">S/o, W/o, D/o</label>
                                                                             <input type="text" class="form-control" name="relation_name" value="<?php echo htmlspecialchars($edit_data['relation_name'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                         <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Date Of Birth</label>
+                                                                            <input type="date" class="form-control" name="lo_dob" value="<?php echo htmlspecialchars($edit_data['lo_dob'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">State</label>
+                                                                            <input type="text" class="form-control" name="lo_state" value="<?php echo htmlspecialchars($edit_data['lo_state'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">District</label>
+                                                                            <input type="text" class="form-control" name="lo_district" value="<?php echo htmlspecialchars($edit_data['lo_district'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Block</label>
+                                                                            <input type="text" class="form-control" name="lo_block" value="<?php echo htmlspecialchars($edit_data['lo_block'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Panchayat</label>
+                                                                            <input type="text" class="form-control" name="lo_panchayat" value="<?php echo htmlspecialchars($edit_data['lo_panchayat'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Village</label>
+                                                                            <input type="text" class="form-control" name="lo_village" value="<?php echo htmlspecialchars($edit_data['lo_village'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Aadhar Number</label>
+                                                                            <input type="number" class="form-control" name="lo_aadhar" value="<?php echo htmlspecialchars($edit_data['lo_aadhar'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">PAN Number</label>
+                                                                            <input type="text" class="form-control" name="lo_pan" value="<?php echo htmlspecialchars($edit_data['lo_pan'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                         <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Agreement Date</label>
+                                                                            <input type="date" class="form-control" name="agree_date" value="<?php echo htmlspecialchars($edit_data['agree_date'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                         <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Agreement Duration(In Months)</label>
+                                                                            <input type="text" class="form-control" name="agree_dur" value="<?php echo htmlspecialchars($edit_data['agree_dur'] ?? ''); ?>">
+                                                                        </div>
+
+                                                                         <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Jamabandi Number</label>
+                                                                            <input type="text" class="form-control" name="jamabandi" value="<?php echo htmlspecialchars($edit_data['jamabandi'] ?? ''); ?>">
                                                                         </div>
 
                                                                         <div class="col-md-12 mb-3">
@@ -583,17 +824,92 @@ if (isset($_GET['id'])) {
                                                                             <input type="text" class="form-control" name="mobile2" value="<?php echo htmlspecialchars($edit_data['mobile2'] ?? ''); ?>">
                                                                         </div>
 
-                                                                        <div class="col-md-4 mb-3">
+                                                                        <div class="col-md-6 mb-3">
                                                                             <label class="form-label fw-semibold">Mauza Name</label>
                                                                             <input type="text" class="form-control" name="mauze_name" value="<?php echo htmlspecialchars($edit_data['mauze_name'] ?? ''); ?>">
                                                                         </div>
 
-                                                                        <div class="col-md-4 mb-3">
+                                                                        <div class="col-md-6 mb-3">
                                                                             <label class="form-label fw-semibold">Thana No.</label>
                                                                             <input type="text" class="form-control" name="thana_no" value="<?php echo htmlspecialchars($edit_data['thana_no'] ?? ''); ?>">
                                                                         </div>
 
-                                                                        <div class="col-md-4 mb-3" >
+                                                                         <div class="col-md-6 mb-3">
+                                                                        <label class="form-label fw-semibold">Old Khesra No.</label>
+                                                                        <input type="text"
+                                                                            class="form-control"
+                                                                            name="khesra_no[old_khesra_no]"
+                                                                            placeholder="Enter Old Khesra No."
+                                                                            value="<?= jsonToText1($edit_data['khesra_no'], 'old') ?? 'null' ?>">
+                                                                            
+                                                                            
+                                                                    </div>
+
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <label class="form-label fw-semibold">New Khesra No.</label>
+                                                                        <input type="text"
+                                                                            class="form-control"
+                                                                            name="khesra_no[new_khesra_no]"
+                                                                            placeholder="Enter New Khesra No."
+                                                                             value="<?= jsonToText1($edit_data['khesra_no'], 'new') ?? 'null' ?>">
+                                                                            
+                                                                            
+                                                                            
+                                                                    </div>
+
+                                                                     <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Old Khata Number </label>
+                                                                            <input type="text"  class="form-control" name="khata[old_khata]" placeholder="Enter Old Khata Number" value="<?= jsonToText1($edit_data['khata'], 'old') ?? 'null' ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">New Khata Number </label>
+                                                                            <input type="text"  class="form-control" name="khata[new_khata]" placeholder="Enter New Khata Number" value="<?= jsonToText1($edit_data['khata'], 'new') ?? 'null' ?>">
+                                                                        </div>
+
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Rate Per Kattha</label>
+                                                                            <input type="number" step="0.01" class="form-control" name="rate_per_katha" placeholder="Enter Rate Per Katha" value="<?php echo htmlspecialchars($edit_data['rate_per_katha'] ?? ''); ?>">
+                                                                        </div>  
+
+                                                                         <div class="col-md-6 mb-3">
+                                                                            <label class="form-label fw-semibold">Total Land Value <span class="text-danger">*</span></label>
+                                                                            <input type="number" step="0.01" class="form-control" name="total_land_value" required id="totalLandValue" value="<?php echo htmlspecialchars($edit_data['total_land_value'] ?? ''); ?>">
+                                                                        </div>
+
+
+                                                                    <div class="col align-items-end mb-3 col-md-12">
+       <label class="form-label fw-semibold mb-2"><strong>Rakwa</strong></label>
+       <div class="row align-items-end mb-3 col-md-12">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Bigha</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[bigha]" placeholder="0" value="<?= jsonToText2($edit_data['rakuwa'], 'bigha') ?? 'null' ?>">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Kattha</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[kattha]" placeholder="0" value="<?= jsonToText2($edit_data['rakuwa'], 'kattha') ?? 'null' ?>">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Dhoor</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[dhoor]" placeholder="0" value="<?= jsonToText2($edit_data['rakuwa'], 'dhoor') ?? 'null' ?>">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Kanma</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[kanma]" placeholder="0" value="<?= jsonToText2($edit_data['rakuwa'], 'kanma') ?? 'null' ?>">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Dismil</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[dismil]" placeholder="0" value="<?= jsonToText2($edit_data['rakuwa'], 'dismil') ?? 'null' ?>">
+        </div>
+ </div>
+    </div>
+
+    
+                                                                        <!-- <div class="col-md-4 mb-3" >
                                                                             <label class="form-label fw-semibold">Enter Number Of Khesra</label>
                                                                             <select name="num_o_k" id="num_o_k" class="form-control">
                                                                                 <option value="">Select</option>
@@ -608,103 +924,78 @@ if (isset($_GET['id'])) {
 
                                                                          <div class="col-md-12 d-flex flex-wrap" id="khesraFields"></div>
 
-                                                                        <!-- <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Khesra No.</label>
-                                                                            <input type="text" class="form-control" name="khesra_no" value="<?php echo htmlspecialchars($edit_data['khesra_no'] ?? ''); ?>">
-                                                                        </div> -->
+                                                                       
                                                                         <div class="col-md-12 d-flex flex-wrap" id="rakwaFields"></div>
 
 
-                                                                        <!-- <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Rakwa</label>
-                                                                            <input 
-    type="text"
-    class="form-control"
-    name="rakuwa"
-    id="rakuwa"
-    value="<?php echo htmlspecialchars($edit_data['rakuwa'] ?? ''); ?>"
-    placeholder="Enter value (e.g. 12.50)"
->
-                                                                        </div> -->
-
+                                                                      
                                                                         <div class="col-md-12 d-flex flex-wrap" id="rateFields"></div>
-                                                                        <!-- <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Rate (Per Katha)</label>
-                                                                            <input type="number" step="0.01" class="form-control" name="rate_per_katha" value="<?php echo htmlspecialchars($edit_data['rate_per_katha'] ?? ''); ?>">
-                                                                        </div> -->
+                                                                        <div class="col-md-12 d-flex flex-wrap" id="khataFields"></div> -->
+                                                                       
 
-                                                                        <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Total Land Value <span class="text-danger">*</span></label>
-                                                                            <input type="number" step="0.01" class="form-control" name="total_land_value" required id="totalLandValue" value="<?php echo htmlspecialchars($edit_data['total_land_value'] ?? ''); ?>">
-                                                                        </div>
+                                                                       
 
 
                                                                         <div class="col-md-12 mb-3">
 
-                                                                           <!-- ==================== NOMINEE DETAILS ==================== -->
-                                                <!-- <div class="form-section mt-4">
-                                                    <legend>NOMINEE DETAILS</legend>
+                                                                           <!-- ==================== Agent DETAILS ==================== -->
+                                                <div class="form-section mt-4">
+                                                    <legend>Agent DETAILS</legend>
 
                                                     <div class="row g-3">
                                                         <div class="col-md-4">
-                                                            <label><b>Nominee Name</b></label>
+                                                            <label><b>Agent Name</b></label>
                                                             <input name="nominee_name" type="text" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_name'] ?? ''); ?>">
                                                         </div>
                                                         <div class="col-md-4">
-                                                            <label><b>S/o, D/o, W/o</b></label>
-                                                            <input name="nominee_so_do_wo" type="text" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_relation'] ?? ''); ?>">
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label><b>Date of Birth</b></label>
-                                                            <input name="nominee_dob" type="date" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_dob'] ?? ''); ?>">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row g-3 mt-2">
-                                                        <div class="col-md-4">
-                                                            <label><b>Nominee Mobile No</b></label>
+                                                            <label><b>Agent Mobile No</b></label>
                                                             <input name="nominee_mobile" type="text" class="form-control" maxlength="10" value="<?php echo htmlspecialchars($edit_data['nom_mobile'] ?? ''); ?>">
                                                         </div>
-                                                        <div class="col-md-4">
-                                                            <label><b>Alternate Mobile No</b></label>
+                                                        <!-- <div class="col-md-4">
+                                                            <label><b>Agent Alternate Mobile No</b></label>
                                                             <input name="nominee_alternate_mobile" type="text" class="form-control" maxlength="10" value="<?php echo htmlspecialchars($edit_data['nom_alt_mobile'] ?? ''); ?>">
-                                                        </div>
+                                                        </div> -->
+                                                       
+                                                    </div>
+
+                                                    <!-- <div class="row g-3 mt-2">
+                                                        
                                                         <div class="col-md-4">
                                                             <label><b>Nominee Email Id</b></label>
                                                             <input name="nominee_email" type="email" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_email'] ?? ''); ?>">
                                                         </div>
-                                                    </div>
+                                                    </div> -->
 
                                                     <div class="row g-3 mt-2">
-                                                        <div class="col-md-4">
-                                                            <label><b>Nominee Aadhar</b></label>
+                                                        <!-- <div class="col-md-4">
+                                                            <label><b>Agent Aadhar</b></label>
                                                             <input name="nominee_aadhar" type="text" class="form-control" maxlength="12"  value="<?php echo htmlspecialchars($edit_data['nom_aadhar'] ?? ''); ?>">
                                                         </div>
                                                         <div class="col-md-4">
-                                                            <label><b>Nominee PAN</b></label>
+                                                            <label><b>Agent PAN</b></label>
                                                             <input name="nominee_pan" type="text" class="form-control" style="text-transform:uppercase;" maxlength="10" value="<?php echo htmlspecialchars($edit_data['nom_pan'] ?? ''); ?>">
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col-md-4">
-                                                            <label><b>Nominee Address</b></label>
+                                                            <label><b>Agent Address</b></label>
                                                             <input name="nominee_address" type="text" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_address'] ?? ''); ?>">
                                                         </div>
                                                     </div>
 
                                                     <div class="row g-3 mt-2">
                                                         <div class="col-md-4">
-                                                            <label><b>Nominee PIN Code</b></label>
-                                                            <input name="nominee_pincode" type="text" class="form-control" maxlength="6" value="<?php echo htmlspecialchars($edit_data['nom_pin'] ?? ''); ?>">
+                                                            <label><b>Agent Comission(Per Kattha)</b></label>
+                                                            <input name="nominee_pincode" type="text" class="form-control"  value="<?php echo htmlspecialchars($edit_data['nom_pin'] ?? ''); ?>">
                                                         </div>
                                                         <div class="col-md-4">
-                                                            <label><b>Nominee State</b></label>
+                                                            <label><b>Agent Total Comission</b></label>
                                                             <input name="nominee_state" type="text" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_state'] ?? ''); ?>">
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <!-- <div class="col-md-4">
                                                             <label><b>Nominee District</b></label>
                                                             <input name="nominee_district" type="text" class="form-control" value="<?php echo htmlspecialchars($edit_data['nom_district'] ?? ''); ?>">
-                                                        </div>
+                                                        </div> -->
                                                     </div>
-                                                </div> -->
+                                                </div>
                                                                         </div>
 
 
@@ -744,48 +1035,75 @@ if (isset($_GET['id'])) {
                                                     <thead class="table-dark">
                                                         <tr>
                                                             <th>Land Owner</th>
+                                                            <th>So/Do/Wo</th>
+                                                            <th>LandOwner DOB</th>
+                                                            <th>LandOwner State</th>
+                                                            <th>LandOwner District</th>
+                                                            <th>LandOwner Block</th>
+                                                            <th>LandOwner Panchayat</th>
+                                                            <th>LandOwner Village</th>
+                                                            <th>LandOwner Aadhar</th>
+                                                            <th>LandOwner PAN</th>
+                                                            <th>LandOwner Address</th>
+                                                            <th>Agreement Date</th>
+                                                            <th>Agreement Duration</th>
+                                                            <th>Jamabandi Number</th>
                                                             <th>Mobile(1)</th>
                                                             <th>Mobile(2)</th>
                                                             <th>Mauza Name</th>
                                                             <th>Thana No</th>
-                                                            <th>Khesra No</th>
+                                                            <th>Old Khesra No</th>
+                                                            <th>New Khesra No</th>
                                                             <th>Rakwa</th>
+                                                             <th>New Khata Number</th>
+                                                             <th>Old Khata Number</th>
                                                             <th>Rate (Per Katha)</th>
                                                             <th>Total Land Value</th>
-                                                            <!-- <th>Nominee Name</th>
-                                                            <th>So/Do/Wo</th>
-                                                            <th>Nominee Dob</th>
-                                                            <th>Nominee Mobile</th>
-                                                            <th>Nominee Alt Mobile</th>
-                                                            <th>Nominee Email</th>
-                                                            <th>Nominee Aadhar</th>
-                                                            <th>Nominee PAN</th>
-                                                            <th>Nominee Address</th>
-                                                            <th>Nominee Pincode</th>
-                                                            <th>Nominee State</th>
-                                                            <th>Nominee District</th> -->
+                                                            <th>Agent Name</th> 
+                                                            <th>Agent Mobile</th>  
+                                                            <th>Agent Address</th>
+                                                            <th>Agent Comission(Per Kattha)</th>
+                                                            <th>Agent Total Comission</th>
+                                                            
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <?php
-                                                        function jsonToText($json) {
-    $arr = json_decode($json, true);
-    return htmlspecialchars(implode(', ', is_array($arr) ? $arr : []));
-}
-
+                                                        
                                                         $records = $pdo->query("SELECT * FROM land_owner_payments ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
                                                         foreach ($records as $row): ?>
                                                             <tr>
                                                                <td><?= htmlspecialchars($row['land_owner_name'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_dob'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['relation_name'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_state'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_district'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_block'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_panchayat'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_village'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_aadhar'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['lo_pan'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['address'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['agree_date'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['agree_dur'] ?? '') ?></td>
+                                                               <td><?= htmlspecialchars($row['jamabandi'] ?? '') ?></td>
 <td><?= htmlspecialchars($row['mobile1'] ?? '') ?></td>
 <td><?= htmlspecialchars($row['mobile2'] ?? '') ?></td>
 <td><?= htmlspecialchars($row['mauze_name'] ?? '') ?></td>
 <td><?= htmlspecialchars($row['thana_no'] ?? '') ?></td>
-<td><?= jsonToText($row['khesra_no']) ?></td>
+<td><?= jsonToText1($row['khesra_no'], 'old') ?? 'null' ?></td>
+<td><?= jsonToText1($row['khesra_no'], 'new') ?? 'null' ?></td>
 <td><?= jsonToText($row['rakuwa']) ?></td>
-<td><?= jsonToText($row['rate_per_katha']) ?></td>
+<td><?= jsonToText1($row['khata'], 'old') ?? 'null' ?></td>
+<td><?= jsonToText1($row['khata'], 'new') ?? 'null' ?></td>
+<td><?= htmlspecialchars($row['rate_per_katha'] ?? '') ?></td>
 <td><?= htmlspecialchars($row['total_land_value'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['nom_name'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['nom_mobile'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['nom_address'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['nom_pin'] ?? '') ?></td>
+<td><?= htmlspecialchars($row['nom_state'] ?? '') ?></td>
 
                                                                 <td>
                                                                     <a href="?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
@@ -793,7 +1111,7 @@ if (isset($_GET['id'])) {
                                                                         <input type="hidden" name="delete_id" value="<?php echo $row['id']; ?>">
                                                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                                                     </form>
-                                                                    <a href="landreceipt.php?landid=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Print</a>
+                                                                    <a href="landownerdetails.php?landid=<?php echo $row['id']; ?>" class="btn btn-sm btn-primary">Print</a>
                                                                 </td>
                                                             </tr>
                                                         <?php endforeach; ?>
@@ -822,7 +1140,7 @@ if (isset($_GET['id'])) {
                 <!-- partial -->
             </a>
             <!-- search box for options-->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet">
             <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -886,6 +1204,62 @@ if (isset($_GET['id'])) {
         }
     </style>
 
+   <script>
+$(document).ready(function(){
+
+    $('#land_owner_name').on('change', function(){ // use change instead of input
+        let val = $(this).val().trim();
+
+        // Find the matching option
+        let option = $("#designationList option").filter(function() {
+            return $(this).val() === val;
+        });
+
+        if(option.length){
+            let id = option.data('id');
+            console.log("Selected ID:", id);
+
+            $.ajax({
+                url: '<?= $_SERVER['PHP_SELF']; ?>',
+                type: 'POST',
+                dataType: 'json',
+                data: { action: 'fetch_land_owner', id: id },
+                success: function(response){
+                    console.log(response);
+                    if(response.status === 'success'){
+                        console.log(response.data.land_owner_name);
+                        
+                        $('input[name="land_owner_name"]').val(response.data.land_owner_name);
+                         $('input[name="relation_name"]').val(response.data.relation_name);
+                        $('input[name="lo_dob"]').val(response.data.lo_dob);
+                        $('input[name="lo_state"]').val(response.data.lo_state);
+                        $('input[name="lo_district"]').val(response.data.lo_district);
+                        $('input[name="lo_block"]').val(response.data.lo_block);
+                        $('input[name="lo_panchayat"]').val(response.data.lo_panchayat);
+                        $('input[name="lo_village"]').val(response.data.lo_village);
+                        $('input[name="lo_aadhar"]').val(response.data.lo_aadhar);
+                        $('input[name="lo_pan"]').val(response.data.lo_pan);
+                        $('input[name="address"]').val(response.data.address);
+                        $('input[name="mobile1"]').val(response.data.mobile1);
+                        $('input[name="mobile2"]').val(response.data.mobile2);
+                        $('input[name="nominee_name"]').val(response.data.nom_name);
+                        $('input[name="nominee_mobile"]').val(response.data.nom_mobile);
+                        $('input[name="nominee_address"]').val(response.data.nom_address);
+                        
+                    } else {
+                        alert('Data not found!');
+                    }
+                }
+            });
+        } else {
+            console.log("No matching option found for:", val);
+        }
+    });
+
+});
+</script>
+
+
     <script>
         // Show/hide bank name field based on payment mode
         document.getElementById('paymentMode').addEventListener('change', function() {
@@ -932,28 +1306,54 @@ $(document).ready(function () {
                 </div>
             `);
 
-             $('#rakwaFields').append(`
-                <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Rakwa ${i}</label>
-                                                                            <input 
-    type="text"
-    class="form-control"
-    name="rakuwa[]"
-    id="rakuwa"
-    
-    placeholder="Enter value (e.g. 12.50)- ${i}"
->
-                </div>
-            `);
+            $('#rakwaFields').append(`
+             
+    <div class="col align-items-end mb-3 col-md-6">
+       <label class="form-label fw-semibold mb-2"><strong>Rakuwa ${i}</strong></label>
+       <div class="row align-items-end mb-3 col-md-12">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Bigha</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[${i}][bigha]" placeholder="0">
+        </div>
 
-                 $('#rateFields').append(`
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Kattha</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[${i}][kattha]" placeholder="0">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Dhoor</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[${i}][dhoor]" placeholder="0">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Kadi</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[${i}][kadi]" placeholder="0">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">Decimal</label>
+            <input type="number" step="any" class="form-control" name="rakuwa[${i}][decimal]" placeholder="0">
+        </div>
+ </div>
+    </div>
+`);
+
+
+                 $('#khataFields').append(`
                <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-semibold">Rate (Per Katha) ${i}</label>
-                                                                            <input type="number" step="0.01" class="form-control" name="rate_per_katha[]" placeholder="Enter Rate Per Kattha - ${i}"">
+                                                                            <label class="form-label fw-semibold">Khata Number ${i}</label>
+                                                                            <input type="number" step="0.01" class="form-control" name="khata[]" placeholder="Enter Khata Number - ${i}"">
                                                                         </div>  
             `);
 
-               
+           $('#rateFields').append(`
+               <div class="col-md-4 mb-3">
+                                                                            <label class="form-label fw-semibold">Rate Per Kattha ${i}</label>
+                                                                            <input type="number" step="0.01" class="form-control" name="rate_per_katha[]" placeholder="Enter Rate Per Katha - ${i}"">
+                                                                        </div>  
+            `);
+    
 
          
         }
@@ -987,6 +1387,7 @@ document.getElementById('rakuwa').addEventListener('input', function () {
 });
 </script>
     
+
 
 </body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
 

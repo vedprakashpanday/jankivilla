@@ -1,4 +1,6 @@
 ﻿<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 include_once "connectdb.php";
 
@@ -6,6 +8,69 @@ include_once "connectdb.php";
 if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
     header("Location: ../../adminlogin.php"); // Redirect to dashboard
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+$stmt = $pdo->prepare("
+    INSERT INTO tbl_bank_details
+    (
+        member_id,
+        account_name,
+        account_no,
+        bank_name,
+        branch,
+        ifsc_code
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+");
+
+$stmt->execute([
+    !empty($_POST['edit_id'])? $_POST['edit_id'] : $_SESSION['sponsor_id'],
+    $_POST['account_name'],
+    $_POST['account_no'],
+    $_POST['bank_name'],
+    $_POST['branch'],
+    $_POST['ifsc_code']
+]);
+
+
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
+$stmt = $pdo->prepare("
+    UPDATE tbl_bank_details SET
+        account_name = ?,
+        account_no   = ?,
+        bank_name    = ?,
+        branch       = ?,
+        ifsc_code    = ?
+    WHERE member_id = ?
+");
+
+$stmt->execute([
+    $_POST['account_name'],
+    $_POST['account_no'],
+    $_POST['bank_name'],
+    $_POST['branch'],
+    $_POST['ifsc_code'],
+    !empty($_POST['edit_id'])? $_POST['edit_id'] : $_SESSION['sponsor_id']
+]);
+
+
+}
+
+// Fetch single employee for edit
+if (isset($_GET['id']) && !isset($_POST['delete_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM tbl_bank_details WHERE member_id = ?");
+    $stmt->execute([$_GET['id']]);
+    $edit_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $edit_id = $_GET['id'];
+}
+
+if (isset($_POST['delete_id'])) {
+    $stmt = $pdo->prepare("DELETE FROM tbl_bank_details WHERE id = ?");
+    $stmt->execute([$_POST['delete_id']]);
+    echo "<script>alert('Bank Detail Deleted'); window.location.href='BankDetail.php';</script>";
 }
 ?>
 
@@ -91,12 +156,16 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 
                                                 <div class="col-md-12">
                                                     <div style="background: #fff; padding: 20px; border: 2px solid #fff; box-shadow: 1px 3px 12px 4px #988f8f;">
-                                                        <h2>Bank Details</h2>
+                                                       <h2 class="mb-0">
+                                            <?php echo isset($edit_id) ? 'Edit Bank Details' : 'Add New Bank Details'; ?>
+                                        </h2>
                                                         <hr>
+                                                        <form method="post">
+                                                            <input type="hidden" name="edit_id" value="<?php echo $edit_id ?? ''; ?>">
                                                         <div class="row">
                                                             <div class="col-md-4">
-                                                                <b>Account Name:</b>
-                                                                <i><input name="" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                                <b>Account Holder Name:</b>
+                                                                <i><input name="account_name" type="text" id="account_name" class="form-control" style="font-weight:bold;" value="<?php echo $edit_data['account_name'] ?? '-'; ?>"></i>
                                                             </div>
 
 
@@ -105,13 +174,13 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                             <div class="col-md-4">
                                                                 <b> Bank A/c No:</b>
 
-                                                                <i> <input name="" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                                <i> <input name="account_no" type="text" id="account_no" class="form-control" style="font-weight:bold;" value="<?php echo $edit_data['account_no'] ?? '-'; ?>"></i>
                                                             </div>
 
                                                             <div class="col-md-4">
                                                                 <b>Bank Name:</b>
 
-                                                                <i> <input name="" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                                <i> <input name="bank_name" type="text" id="bank_name" class="form-control" style="font-weight:bold;" value="<?php echo $edit_data['bank_name'] ?? '-'; ?>"></i>
                                                             </div>
                                                         </div>
 
@@ -121,38 +190,94 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
                                                                     Branch:
                                                                 </b>
                                                                 <i>
-                                                                    <input name="" type="text" id="" class="form-control" style="font-weight:bold;">
+                                                                    <input name="branch" type="text" id="branch" class="form-control" style="font-weight:bold;" value="<?php echo $edit_data['branch'] ?? '-'; ?>">
                                                                 </i>
                                                             </div>
 
                                                             <div class="col-md-4">
                                                                 <b>
                                                                     IFSC Code:</b>
-                                                                <i><input name="" type="text" id="" class="form-control" style="font-weight:bold;"></i>
+                                                                <i><input name="ifsc_code" type="text" id="ifsc_code" class="form-control" style="font-weight:bold;" value="<?php echo $edit_data['ifsc_code'] ?? '-'; ?>"></i>
 
                                                             </div>
 
-                                                            <div class="col-md-4">
-                                                                <b>
-                                                                    PAN No:
-                                                                </b>
-                                                                <i>
-                                                                    <input name="" type="text" id="" class="form-control" style="font-weight:bold;">
-                                                                </i>
-                                                            </div>
+                                                            
                                                         </div>
                                                         <div class="row pt-4">
                                                             <div class="col-md-12">
                                                                 <div class="row justify-content-center">
                                                                     <div class="col-4">
-                                                                        <input type="submit" name="" value="Save" id="" class="btn-success">
+                                                                        <input type="submit" name="<?php echo isset($edit_id) ? 'update' : 'submit'; ?>" value="<?php echo isset($edit_id) ? 'Update' : 'Add'; ?> Bank Details" id="" class="btn-success" >
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-
+                                                        </form>
                                                     </div>
                                                 </div>
+
+
+                                           <div class="col-md-12 mt-4">
+    <div style="background:#fff; padding:20px; border:2px solid #fff; box-shadow:1px 3px 12px 4px #988f8f;">
+        
+        <h2>Bank Details</h2>
+        <hr>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                
+                <thead class="table-light">
+                    <tr>
+                        <th>Sl No.</th>
+                        <th>Account Holder Name</th>
+                        <th>Bank A/c No</th>
+                        <th>Bank Name</th>
+                        <th>Branch</th>
+                        <th>IFSC Code</th>                        
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                     <?php
+    $customers = $pdo->query(
+        "SELECT * FROM tbl_bank_details ORDER BY id DESC"
+    )->fetchAll(PDO::FETCH_ASSOC);
+                                                                    $i=1;
+    foreach ($customers as $row): ?>
+                    <tr>
+                        <td><?= $i++ ?></td>
+                        <td><?= $row['account_name'] ?></td>
+                        <td><?= $row['account_no'] ?></td>
+                        <td><?= $row['bank_name'] ?></td>
+                        <td><?= $row['branch'] ?></td>
+                        <td><?= $row['ifsc_code'] ?></td>                        
+                        <td>
+                            <a href="?id=<?= $row['member_id']; ?>" class="btn btn-sm btn-warning">
+                    Edit
+                </a>
+
+                <form method="post" class="d-inline"
+                      onsubmit="return confirm('Delete this record?');">
+                    <input type="hidden" name="delete_id"
+                           value="<?= $row['id']; ?>">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Delete
+                    </button>
+                </form>
+
+
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>
+
                                             </div>
                                         </div>
                                     </div>

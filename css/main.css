@@ -245,7 +245,7 @@ a:hover {
 
 a,
 button {
-  color: inherit;
+  color: #ffffff;
   outline: none;
   border: none;
   background: transparent;
@@ -492,11 +492,11 @@ figure {
 }
 
 .bg-color-1 {
-  background: var(--black-color);
+  background: #3627b9;
 }
 
 .bg-color-2 {
-  background: #27282f;
+  background: #3627b9;
 }
 
 .bg-color-3 {
@@ -1541,7 +1541,7 @@ figure {
   display: inline-block;
   font-size: 18px;
   font-weight: 500;
-  color: var(--white-color);
+  color: #000000;
   padding: 30px 0;
   text-align: left;
   position: relative;
@@ -1570,7 +1570,7 @@ figure {
   top: 100%;
   inset-inline-start: 0;
   min-width: 240px;
-  background: #fff;
+  background: #ffffff;
   z-index: 99;
   visibility: hidden;
   opacity: 0;
@@ -1851,12 +1851,12 @@ a.bar-icon:hover svg {
   z-index: 3;
   padding: 0 70px;
   overflow-x: clip;
-  background: var(--black-color);
+  background: #ffffff;
 }
 
 .header-top-contact-info span,
 .header-top-welcome-text .welcome {
-  color: var(--gray-color-1);
+  color: #f35c25;
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
@@ -1926,7 +1926,7 @@ a.bar-icon:hover svg {
   justify-content: space-between;
   align-items: center;
   padding: 10px 70px;
-  background: var(--black-color);
+  background: #3627b9;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1966,7 +1966,7 @@ a.bar-icon:hover svg {
 }
 
 .header-style-one.sticky {
-  background: var(--black-color);
+  background: #ffffff;
 }
 
 @media only screen and (max-width: 1800px) {
@@ -2524,7 +2524,7 @@ a.bar-icon:hover svg {
   font-style: normal;
   font-weight: 400;
   line-height: 29px;
-  background: #27282f;
+  background: #ffffff;
   border: none;
 }
 
@@ -6288,6 +6288,7 @@ ul.team-member-socials-icon li:hover {
 /*----------------------------------------*/
 
 .contact-info-box {
+  min-height: 310px;
   padding: 35px 40px;
   text-align: center;
   border-radius: 10px;

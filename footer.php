@@ -1,6 +1,6 @@
 <footer>
    <div class="footer-main bg-color-1 p-relative">
-      <div class="shape" data-background="images/footer-bg.png" alt="Residential plots near darbhanga airport, land for sale near darbhanga airport" title="Property Sites Near Darbhanga Airport | Land Near New Railway Station" style="background-image: url(&quot;images/footer-bg.png&quot;);"></div>
+      <div class="shape" alt="Residential plots near darbhanga airport, land for sale near darbhanga airport" title="Property Sites Near Darbhanga Airport | Land Near New Railway Station"></div>
       <div class="custom-container p-relative">
          <div class="footer-top pt-65 pb-30">
             <div class="footer-logo">
@@ -10,10 +10,7 @@
             </div>
             <div class="footer-call">
 
-               <div class="info">
-                  <span>Have Any Question ? Call</span>
-                  <h4><a href="tel:+919031079721" title="Contact Number - Amitabh Builders & Developers">+919031079721</a></h4>
-               </div>
+              
             </div>
          </div>
          <div class="footer-middle pt-50 pb-70">
@@ -22,9 +19,13 @@
                   <div class="footer-widget-1">
 
                      <ul class="company-info mt-30">
-                        <li class="phone-number"><a href="tel:+919031079721" title="Contact Number - Amitabh Builders & Developers">+919031079721</a></li>
+                        <li class="phone-number"><a href="tel:+919472467007" title="">9472467007</a> 
+                        &nbsp; &nbsp;&nbsp; &nbsp;<a href="#" title="">9060218/222/333/666</a></li>
                         <li class="email"><a href="mailto:abdeveloperspl@gmail.com" title="Email Id - Amitabh Builders & Developers">abdeveloperspl@gmail.com</a></li>
-                        <li class="address">1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007</li>
+                        <li class="address"><b>Head Office :</b>1st Floor, Pappu Yadav Building, South of NH-27, Kakarghati Chowk, Bhuskaul, Darbhanga, Bihar, India, 846007</li>
+
+                        <li class="address"><b>Branch Office :</b> Near Jha Indian Petrol Pump, Mohana Chowk,
+            Jhanjharpur, Madhubani, Pin-847404 (Bihar)</li>
                      </ul>
                      <div class="offcanvas__social">
                         <ul>
@@ -69,6 +70,17 @@
                </div>
 
                <div class="col-xxl-3 col-xl-3 col-lg-3 col-md-6">
+<div class="footer-widget-4">
+                <div class="info">
+                  <h5 class="footer-widget-title mb-3">Have Any Question ? Call</h5>
+                  <hr class="bg-mute">
+                  <!-- <span>Have Any Question ? Call</span> -->
+                  <h4>
+                     <a href="tel:+919472467007" title="">9472467007</a> <br>
+                        <a href="#" title="">9060218/222/333/666</a>
+                  </h4>
+               </div>
+               </div>
                   <!-- <div class="footer-widget-4">
                      <h5 class="footer-widget-title mb-15">Gallery</h5>
                      <div class="footer-gallery">

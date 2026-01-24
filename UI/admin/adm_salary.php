@@ -193,7 +193,7 @@ exit;
 
                                                
                                                 <div class="col-12 col-md-4">
-                                                     <label><b>Select Staff</b></label>
+                                                     <label><b>Select Employee</b></label>
                                                         <input 
                                                             type="text" 
                                                             name="designation" 
@@ -244,9 +244,9 @@ exit;
     <table id="staffTable" class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Staff ID</th>
-                <th>Staff Name</th>
-                <th>Staff Designation</th>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Employee Designation</th>
                 <th>Salary</th>
                 <th>Action</th>
             </tr>

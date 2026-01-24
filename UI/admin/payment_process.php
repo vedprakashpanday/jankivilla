@@ -139,6 +139,7 @@ if ($action === 'search') {
             $customer['due_amount'] = floatval($customer['due_amount']);
             $customer['corner_charge'] = floatval($customer['corner_charge'] ?? 0);
             $customer['gross_amount'] = floatval($customer['gross_amount'] ?? 0);
+            $customer['pass_book_no'] = $customer['pass_book_no']??'';
             $response['customer'] = $customer;
 
             $stmt = $pdo->prepare("SELECT * FROM receiveallpayment WHERE invoice_id = ? ORDER BY id DESC");
@@ -309,7 +310,7 @@ if ($action === 'verify_otp_and_delete') {
     }
 }
 
-if ($action === 'check_duplicate') {
+if ($action === 'check_duplicate') { 
     $invoice_id = trim($_POST['invoice_id'] ?? '');
     $voucher_number = trim($_POST['voucher_number'] ?? '');
     $utr_number = trim($_POST['utr_number'] ?? '');
@@ -420,7 +421,8 @@ if ($action === 'submit_payment') {
         'utr_number' => trim($_POST['utr_number'] ?? '') ?: null,
         'neft_payment' => trim($_POST['neft_payment'] ?? '') ?: null,
         'rtgs_payment' => trim($_POST['rtgs_payment'] ?? '') ?: null,
-        'created_date' => trim($_POST['payment_date'] ?? '')
+        'created_date' => trim($_POST['payment_date'] ?? ''),
+        'passbook' => trim($_POST['passbook'] ?? '') ?: null,
     ];
 
     $debug[] = ['stage' => 'DATA_COLLECTED', 'data' => $data];
@@ -434,20 +436,58 @@ if ($action === 'submit_payment') {
     $count = 1;
     $enroll = 0;
     $flag=0;
+    $passbook_no=$data['passbook'];
     $debug[] = ['stage' => 'INITIALIZED', 'allot' => $allot, 'count' => $count, 'enroll' => $enroll];
 
+    //working logic for enrollment
     if ($data['payment_type'] == 'enroll') {
-        $flag++;
+        if(($data['admission']+$data['enroll']+$data['payamount'])<=16100)
+        {
+           
+
+            if(($data['enroll']+$data['payamount'])-$data['admission']==15000)
+            {
+                echo json_encode(['success' => false, 'error' => 'Enrollment charge must be 15000 if admission charge is 0']);
+
+                exit;
+
+                 $flag++;
         $count = 6;
         $enroll = 15000;
         $admission = 0;
         $allot = 0;
         $due = $data['due_amount'] - $allot;
+            }
+            else
+                {
+                echo json_encode(['success' => false, 'error' => 'Minimum Rs.16100 required for allotment including Rs.1100 admission and Rs.15000 enrollment charge.']);
+
+            exit;
+
+            }
+        }
+        else{
+
+        }
+       
 
         $debug[] = ['stage' => 'ENROLL_LOGIC', 'count' => $count, 'enroll' => $enroll, 'due' => $due];
     }
+    //working logic for enrollment ends here
+
+    //working logic for allotment
 
     else if ($data['payment_type'] == 'allot') {
+
+    if(!empty($data['passbook']))
+    {
+$pdo->prepare("UPDATE receiveallpayment SET pass_book_no = ? WHERE invoice_id = ?")
+                    ->execute([$passbook_no, $data['invoice_id']]);
+
+$pdo->prepare("UPDATE tbl_customeramount SET pass_book_no = ? WHERE invoice_id = ?")
+                    ->execute([$passbook_no, $data['invoice_id']]);
+
+    }
 
         // $enroll =$data['enroll'];
         // $admission =$data['admission'];
@@ -662,6 +702,7 @@ if ($action === 'submit_payment') {
                 admission_charge = ?,
                 enrollment_charge = ?,
                 created_date = ?
+                
             WHERE invoice_id = ?
         ");
 
@@ -672,6 +713,7 @@ if ($action === 'submit_payment') {
             $enroll,
             $data['created_date'],
             $data['invoice_id']
+           
         ]);
 
         $pdo->commit();
@@ -700,6 +742,7 @@ if ($action === 'submit_payment') {
             SET payamount = payamount + ?, 
                 due_amount = ?,                
                 enrollment_charge = ?,
+               
                 created_date = ?
             WHERE invoice_id = ?
         ");
@@ -710,6 +753,7 @@ if ($action === 'submit_payment') {
             $enroll,
             $data['created_date'],
             $data['invoice_id']
+           
         ]);
 
         $pdo->commit();
@@ -736,6 +780,7 @@ if ($action === 'submit_payment') {
             SET payamount = payamount + ?, 
                 due_amount = ?,               
                 created_date = ?
+                
             WHERE invoice_id = ?
         ");
 
@@ -744,6 +789,7 @@ if ($action === 'submit_payment') {
             $due,
             $data['created_date'],
             $data['invoice_id']
+           
         ]);
 
         $pdo->commit();

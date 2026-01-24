@@ -48,75 +48,106 @@ if (!isset($_SESSION['sponsor_id']) || $_SESSION['status'] !== 'active') {
 // Handle update request
 if (isset($_POST['btnsubmit'])) {
 
-    // Safe inputs
-    $staff_id = trim($_POST['designation']);    
-    $absent   = 0; 
-    $month1    = (int) $_POST['month'];
+// echo "<pre>";
+// print_r($_POST);
+// echo "</pre>";
+// exit();
+  try {
+
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $staff_id = trim($_POST['designation']);
+    $month1   = (int) $_POST['month'];
     $year     = (int) $_POST['year'];
     $amount   = (float) $_POST['adv_amount'];
-    $type = $_POST['adv_type'];
-    $cut = isset($_POST['cut']) ? (float) $_POST['cut'] : 0;
+    $type     = strtoupper($_POST['adv_type']); // FS / OD
+    $cut      = isset($_POST['cut']) && $_POST['cut'] !== '' ? (float)$_POST['cut'] : 0;
 
+    $month = sprintf('%02d', $month1);
 
-    $month = sprintf('%02d',$month1);
-
-
-   $repayment_date = !empty($_POST['repayment_date'])  ? $_POST['repayment_date'] : null;
-    // Total days in month  cal_days_in_month(CAL_GREGORIAN, $month, $year);
-    $daysInMonth = 30;
-
-    // Fetch basic salary
+    // ================= FETCH SALARY =================
     $stmt = $pdo->prepare("
-        SELECT salary 
-        FROM adm_salary 
-        WHERE staff_id = :staff_id
+        SELECT salary FROM adm_salary WHERE staff_id = :staff_id
     ");
     $stmt->execute(['staff_id' => $staff_id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row1 = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$row) {
-        die('Salary not found for staff');
+    if (!$row1) {
+        throw new Exception('Salary not found');
     }
 
-    $basicSalary = (float) $row['salary'];
-
-      $stmt = $pdo->prepare("
-        SELECT rem_due,advance
-        FROM calc_salary 
+    // ================= FETCH LAST ROW =================
+    $stmt = $pdo->prepare("
+        SELECT repayment_type, repayment_date, rem_due
+        FROM calc_salary
         WHERE staff_id = :staff_id
+        ORDER BY id DESC
+        LIMIT 1
     ");
     $stmt->execute(['staff_id' => $staff_id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $last = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $existingAdvance = $row ? (float) $row['advance'] : 0;
-    $existingDue = $row ? (float) $row['rem_due'] : 0;
-    $totalAdvance = $amount;
-    $dueAmount = $existingDue + $amount;
-    // ---- Salary Calculation ----
-    // $paidDays  = max(0, $daysInMonth - ($absent-1));   // negative avoid
-    // $perDay    = $basicSalary / $daysInMonth;
-    $paidSalary = 0;
+    // ================= JSON SAFE LOAD =================
+    $repaymentTypes = json_decode($last['repayment_type'] ?? '', true);
+    $repaymentDates = json_decode($last['repayment_date'] ?? '', true);
 
-    // Insert salary record
+    if (!is_array($repaymentTypes)) $repaymentTypes = [];
+    if (!is_array($repaymentDates)) $repaymentDates = [];
+
+    // ================= APPEND NEW ADVANCE =================
+    $repaymentTypes[] = [
+        'type' => $type
+    ];
+
+    $repaymentDates[] = [
+        'date' => ($type === 'OD' && !empty($_POST['repayment_date']))
+            ? date('Y-m-d', strtotime($_POST['repayment_date']))
+            : null
+    ];
+
+    // ================= DUE AMOUNT =================
+    $existingDue = (float)($last['rem_due'] ?? 0);
+    $newDue = $existingDue + $amount;
+
+    // ================= INSERT =================
     $stmt = $pdo->prepare("
-        INSERT INTO calc_salary 
-        (staff_id, salary_month, absent, actual_salary, paid_salary, created_at,half_day,advance,cut,rem_due,advance_date,repayment_type,repayment_date)
-        VALUES 
-        (:staff_id, :salary_month, :absent, :actual_salary, :paid_salary, NOW(),0,:advance,:cut,:rem_due,NOW(),:repayment_type,:repayment_date)
+        INSERT INTO calc_salary
+        (
+            staff_id, salary_month, absent,
+            actual_salary, paid_salary,
+            created_at, half_day,
+            advance, cut, rem_due,
+            advance_date,
+            repayment_type, repayment_date
+        )
+        VALUES
+        (
+            :staff_id, :salary_month, 0,
+            :actual_salary, 0,
+            NOW(), 0,
+            :advance, :cut, :rem_due,
+            NOW(),
+            :repayment_type, :repayment_date
+        )
     ");
 
     $stmt->execute([
         'staff_id'       => $staff_id,
         'salary_month'   => "$year-$month-01",
-        'absent'         => $absent,
-        'actual_salary'  => $basicSalary,
-        'paid_salary'    => $paidSalary,
-        'advance'        => $totalAdvance,
+        'actual_salary'  => $row1['salary'],
+        'advance'        => $amount,
         'cut'            => $cut,
-        'rem_due'        => $dueAmount,
-        'repayment_type' => $type,
-        'repayment_date' => $repayment_date
+        'rem_due'        => $newDue,
+        'repayment_type' => json_encode($repaymentTypes),
+        'repayment_date' => json_encode($repaymentDates)
     ]);
+
+    echo "ADVANCE INSERT SUCCESS";
+
+} catch (PDOException $e) {
+    echo "<pre style='color:red'>DB ERROR: ".$e->getMessage()."</pre>";
+    exit;
+}
 
     header("Location: add_advance.php");
     exit;
@@ -240,7 +271,7 @@ if (isset($_POST['btnsubmit'])) {
 
                                                
                                                 <div class="col-12 col-md-4">
-                                                     <label><b>Select Staff</b></label>
+                                                     <label><b>Select Employee</b></label>
                                                         <input 
                                                             type="text" 
                                                             name="designation" 
@@ -347,9 +378,10 @@ if (isset($_POST['btnsubmit'])) {
     <table id="staffTable" class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Staff ID</th>
-                <th>Staff Name</th>
-                <th>Staff Designation</th>
+                 <th>Action</th>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Employee Designation</th>
                 <th>Basic Salary</th>
                 <th>Salary month</th>
                 <th>Advance Amount</th>
@@ -361,7 +393,7 @@ if (isset($_POST['btnsubmit'])) {
                 <th>Half Day</th>
                 <th>Absent</th>
                 <th>Paid Salary</th>
-                <th>Action</th>
+               
             </tr>
         </thead>
         <tbody>
@@ -374,6 +406,9 @@ if (isset($_POST['btnsubmit'])) {
                                                                     if($row['paid_salary']==0):
                                                                 ?>
             <tr>
+                <td>
+                    <input type="submit" class="btn btn-sm btn-primary editBtn" name="edit" value="Edit" />
+                </td>
                 <td><?= htmlspecialchars($row['member_id']) ?></td>
                 <td><?= htmlspecialchars($row['full_name']) ?></td>
                 <td><?= htmlspecialchars($row['designation']) ?></td>
@@ -381,16 +416,46 @@ if (isset($_POST['btnsubmit'])) {
                 <td><?= htmlspecialchars($row['salary_month'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['advance'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['advance_date'] ?? '') ?></td>
-                <td><?= htmlspecialchars($row['repayment_type'] ?? '') ?></td>
-                <td><?= htmlspecialchars($row['repayment_date'] ?? '') ?></td>
+                <td>
+<?php
+$types = json_decode($row['repayment_type'] ?? '', true);
+
+if (is_array($types)) {
+    $labels = [];
+    foreach ($types as $t) {
+        if (!empty($t['type'])) {
+            $labels[] = strtoupper($t['type']);
+        }
+    }
+    echo htmlspecialchars(implode(', ', $labels));
+} else {
+    echo htmlspecialchars($row['repayment_type'] ?? '');
+}
+?>
+</td>
+                <td>
+<?php
+$dates = json_decode($row['repayment_date'] ?? '', true);
+
+if (is_array($dates)) {
+    $out = [];
+    foreach ($dates as $d) {
+        if (!empty($d['date'])) {
+            $out[] = date('d-m-Y', strtotime($d['date']));
+        }
+    }
+    echo htmlspecialchars(implode(', ', $out));
+} else {
+    echo htmlspecialchars($row['repayment_date'] ?? '');
+}
+?>
+</td>
                 <td><?= htmlspecialchars($row['rem_due'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['cut'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['half_day'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['absent'] ?? '') ?></td>
                 <td><?= htmlspecialchars($row['paid_salary'] ?? '') ?></td>
-                <td>
-                    <input type="submit" class="btn btn-sm btn-primary editBtn" name="edit" value="Edit" />
-                </td>
+                
             </tr>
             <?php  endif; ?>
            <?php endforeach; ?>
